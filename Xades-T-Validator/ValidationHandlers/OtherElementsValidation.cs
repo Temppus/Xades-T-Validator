@@ -84,39 +84,28 @@ namespace Xades_T_Validator.ValidationHandlers
             {
                 XmlNodeList references = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference", GetNamespaceManager(xmlDoc));
                 foreach(XmlElement xmlRef in references){
+                    string refType = xmlRef.Attributes["Type"].Value;
+
                     string targetId = xmlRef.Attributes["URI"].Value.Substring(1);
                     var targetElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature//*[@Id='" + targetId + "']", GetNamespaceManager(xmlDoc));
                     if (targetElement == null)
                     {
                         validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                     }
-                    /*foreach (KeyValuePair<string, string> entry in refElementsInfos)
-                    {
-                        if ()
-                        {
-                            if ()
-                            {
 
-                            }
+                    bool foundElementType = false;
+                    foreach (KeyValuePair<string, string> entry in refElementsInfos)
+                    {
+                        if (entry.Key == targetElement.Name && entry.Value == refType)
+                        {
+                            foundElementType = true;
+                            break;
                         }
                     }
-                    string targetNodeName = targetElement.Name;
-
-                    // Check if reference is for supported elements only
-                    if (REFERENCE_TYPES.containsKey(targetNodeName))
+                    if(foundElementType == false)
                     {
-                        // Check if reference has correct type
-                        if (!REFERENCE_TYPES.get(targetNodeName).equals(type))
-                        {
-                            throw new SignVerificationException(String.format("Element 'ds:Reference' has invalid 'Type' value - '%s' for element '%s' (Rule 9-12).",
-                                    type, targetNodeName));
-                        }
+                        validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                     }
-                    else
-                    {
-                        throw new SignVerificationException(String.format("Found reference to unsupported element '%s' (Rule 12).", targetNodeName));
-                    }*/
-
                 }
             }
             catch (Exception /*ex*/)
