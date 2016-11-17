@@ -51,8 +51,10 @@ namespace Xades_T_Validator.ValidationHandlers.Base
                     if (attributes != null && attributes.Length > 0)
                     {
                         object[] paramArray = new object[] { xmlWrapper };
-                        var validationMessge = method.Invoke(this, paramArray);
-                        validationMessages.Add(validationMessge.ToString());
+                        ValidationError valError = (ValidationError)method.Invoke(this, paramArray);
+
+                        if (valError.ErrorMessage != null)
+                            validationMessages.Add(valError.ToString());
                     }
                 }
             }

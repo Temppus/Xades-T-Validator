@@ -19,9 +19,6 @@ namespace Xades_T_Validator.Wrappers
 
         public override string ToString()
         {
-            if (ErrorMessage == null)
-                return null;
-
             return FileName + " -> " + ErrorMessage;
         }
     }
