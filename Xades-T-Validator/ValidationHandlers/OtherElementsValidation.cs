@@ -20,6 +20,8 @@ namespace Xades_T_Validator.ValidationHandlers
         {
         }
 
+        #region Signature-SignatureValue-SignedInfo
+
         [XadesTValidationHandler(ExecutionOrder: 1, Description: "ds:Signature: musí mať Id atribút, musí mať špecifikovaný namespace xmlns:ds")]
         public ValidationError ValidationHandler1(XMLDocumentWrapper docWrapper)
         {
@@ -65,5 +67,10 @@ namespace Xades_T_Validator.ValidationHandlers
 
             return validationError;
         }
+        #endregion
+
+        #region KeyInfoValidation
+
+        #endregion
     }
 }
