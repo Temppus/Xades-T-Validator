@@ -50,6 +50,7 @@
     <Compile Include="ValidationHandlers\Base\BaseXadesTValidator.cs" />
     <Compile Include="ValidationHandlers\DataEnvelopeValidator.cs" />
     <Compile Include="ValidationHandlers\Interfaces\IValidationMessagesCollector.cs" />
+    <Compile Include="ValidationHandlers\OtherElementsValidation.cs" />
     <Compile Include="ValidationHandlers\XMLSignatureValidator.cs" />
     <Compile Include="Wrappers\ValidationError.cs" />
     <Compile Include="Wrappers\XMLDocumentWrapper.cs" />
