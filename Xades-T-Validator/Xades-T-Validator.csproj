@@ -48,9 +48,12 @@
     <Compile Include="ValidationExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ValidationHandlers\Base\BaseXadesTValidator.cs" />
+    <Compile Include="ValidationHandlers\CertificatVerification.cs" />
+    <Compile Include="ValidationHandlers\CoreValidator.cs" />
     <Compile Include="ValidationHandlers\DataEnvelopeValidator.cs" />
     <Compile Include="ValidationHandlers\Interfaces\IValidationMessagesCollector.cs" />
     <Compile Include="ValidationHandlers\OtherElementsValidation.cs" />
+    <Compile Include="ValidationHandlers\TimestampValidator.cs" />
     <Compile Include="ValidationHandlers\XMLSignatureValidator.cs" />
     <Compile Include="Wrappers\ValidationError.cs" />
     <Compile Include="Wrappers\XMLDocumentWrapper.cs" />
