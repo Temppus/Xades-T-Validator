@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Xades_T_Validator
+namespace Xades_T_Validator.ValidationHandlers
 {
-    class Program
+    public class XMLSignatureValidator
     {
-        static void Main(string[] args)
-        {
-        }
     }
 }
