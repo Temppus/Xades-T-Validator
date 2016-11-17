@@ -107,6 +107,18 @@ namespace Xades_T_Validator.ValidationHandlers
                         validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                     }
                 }
+                if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#Object']", GetNamespaceManager(xmlDoc)) == null)
+                {
+                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                }
+                if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#SignatureProperties']", GetNamespaceManager(xmlDoc)) == null)
+                {
+                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                }
+                if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://uri.etsi.org/01903#SignedProperties']", GetNamespaceManager(xmlDoc)) == null)
+                {
+                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                }
             }
             catch (Exception /*ex*/)
             {
