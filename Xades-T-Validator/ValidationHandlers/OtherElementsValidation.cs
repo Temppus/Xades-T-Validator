@@ -11,8 +11,8 @@ using Xades_T_Validator.Wrappers;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
-    [XadesTValidator(ValidationTaskName: "Overenie ostatných elementov profilu XAdES_ZEP, ktoré prináležia do špecifikácie XML Signature")]
-    class OtherElementsValidation : BaseXadesTValidator
+    [XadesTValidator(ExecutionOrder: 4, ValidationTaskName: "Overenie ostatných elementov profilu XAdES_ZEP, ktoré prináležia do špecifikácie XML Signature")]
+    partial class OtherElementsValidation : BaseXadesTValidator
     {
         private const string xmlnsDs = "http://www.w3.org/2000/09/xmldsig#";
         private Dictionary<string, string> refElementsInfos;
@@ -53,7 +53,7 @@ namespace Xades_T_Validator.ValidationHandlers
             return validationError;
         }
 
-        [XadesTValidationHandler(ExecutionOrder: 1, Description: "ds:SignatureValue – musí mať Id atribút")]
+        [XadesTValidationHandler(ExecutionOrder: 2, Description: "ds:SignatureValue – musí mať Id atribút")]
         public ValidationError ValidationHandler2(XMLDocumentWrapper docWrapper)
         {
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
@@ -74,7 +74,7 @@ namespace Xades_T_Validator.ValidationHandlers
             return validationError;
         }
 
-        [XadesTValidationHandler(ExecutionOrder: 1, Description: "overenie existencie referencií v ds:SignedInfo a hodnôt atribútov Id a Type voči profilu XAdES_ZEP pre: ds:KeyInfo element, ds: SignatureProperties element, xades: SignedProperties element, všetky ostatné referencie v rámci ds: SignedInfo musia byť referenciami na ds: Manifest elementy")]
+        [XadesTValidationHandler(ExecutionOrder: 3, Description: "overenie existencie referencií v ds:SignedInfo a hodnôt atribútov Id a Type voči profilu XAdES_ZEP pre: ds:KeyInfo element, ds: SignatureProperties element, xades: SignedProperties element, všetky ostatné referencie v rámci ds: SignedInfo musia byť referenciami na ds: Manifest elementy")]
         public ValidationError ValidationHandler3(XMLDocumentWrapper docWrapper)
         {
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);

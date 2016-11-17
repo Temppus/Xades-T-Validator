@@ -44,22 +44,40 @@ namespace Xades_T_Validator.ValidationHandlers.Base
 
             foreach (var xmlWrapper in _documentWrappers)
             {
-                var methods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public);
-                foreach (var method in methods)
+                var sortedmethods = FetchSortedValidationHandlers();
+
+                foreach (var pair in sortedmethods)
                 {
-                    var attributes = method.GetCustomAttributes(typeof(XadesTValidationHandlerAttribute), true);
+                    var attributes = pair.Value.GetCustomAttributes(typeof(XadesTValidationHandlerAttribute), true);
                     if (attributes != null && attributes.Length > 0)
                     {
                         object[] paramArray = new object[] { xmlWrapper };
-                        ValidationError valError = (ValidationError)method.Invoke(this, paramArray);
+                        ValidationError valError = (ValidationError)pair.Value.Invoke(this, paramArray);
 
                         if (valError.ErrorMessage != null)
-                            validationMessages.Add(valError.ToString());
+                            validationMessages.Add(pair.Key + ".) " + valError.ToString());
                     }
                 }
             }
 
             return validationMessages;
+        }
+
+        private SortedList<int, MethodInfo> FetchSortedValidationHandlers()
+        {
+            SortedList<int, MethodInfo> handlers = new SortedList<int, MethodInfo>();
+
+            var methods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public);
+            foreach (var method in methods)
+            {
+                var attributes = method.GetCustomAttributes(typeof(XadesTValidationHandlerAttribute), true);
+                if (attributes != null && attributes.Length > 0)
+                {
+                    XadesTValidationHandlerAttribute valAttr = (XadesTValidationHandlerAttribute)method.GetCustomAttributes(typeof(XadesTValidationHandlerAttribute), true)[0];
+                    handlers.Add(valAttr.ExecutionOrder, method);
+                }
+            }
+            return handlers;
         }
     }
 }

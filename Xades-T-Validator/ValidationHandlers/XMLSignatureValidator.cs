@@ -11,7 +11,7 @@ using Xades_T_Validator.Wrappers;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
-    [XadesTValidator(ValidationTaskName: "Overenie XML Signature")]
+    [XadesTValidator(ExecutionOrder: 2, ValidationTaskName: "Overenie XML Signature")]
     public class XMLSignatureValidator : BaseXadesTValidator
     {
         public XMLSignatureValidator(IEnumerable<XMLDocumentWrapper> documentWrappers) : base(documentWrappers)

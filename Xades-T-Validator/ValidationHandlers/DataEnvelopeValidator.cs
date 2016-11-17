@@ -8,7 +8,7 @@ using Xades_T_Validator.Wrappers;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
-    [XadesTValidator(ValidationTaskName : "Overenie dátovej obálky")]
+    [XadesTValidator(ExecutionOrder: 1, ValidationTaskName : "Overenie dátovej obálky")]
     public class DataEnvelopeValidator : BaseXadesTValidator
     {
         public DataEnvelopeValidator(IEnumerable<XMLDocumentWrapper> documents) : base(documents)
@@ -34,7 +34,7 @@ namespace Xades_T_Validator.ValidationHandlers
             return validationError;
         }
 
-        [XadesTValidationHandler(ExecutionOrder: 1, Description: "Koreňový element musí obsahovať atribúty xmlns:ds podľa profilu XADES_ZEP")]
+        [XadesTValidationHandler(ExecutionOrder: 2, Description: "Koreňový element musí obsahovať atribúty xmlns:ds podľa profilu XADES_ZEP")]
         public ValidationError ValidationHandler2(XMLDocumentWrapper docWrapper)
         {
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);

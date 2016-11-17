@@ -10,10 +10,12 @@ namespace Xades_T_Validator.Attributes
     public class XadesTValidator : Attribute
     {
         public string ValidationTaskName { get; set; }
+        public int ExecutionOrder { get; set; }
 
-        public XadesTValidator(string ValidationTaskName)
+        public XadesTValidator(int ExecutionOrder, string ValidationTaskName)
         {
             this.ValidationTaskName = ValidationTaskName;
+            this.ExecutionOrder = ExecutionOrder;
         }
     }
 }

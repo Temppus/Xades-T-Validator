@@ -25,24 +25,41 @@ namespace Xades_T_Validator
             if (File.Exists(VALIDATION_ERRORS_FILE_PATH))
                 File.Delete(VALIDATION_ERRORS_FILE_PATH);
 
+            var validators = FetchSortedValidators();
+
+            foreach (var validatorItem in validators)
+            {
+                var type = validatorItem.Value;
+
+                IValidationMessagesCollector errorCollector = (IValidationMessagesCollector)Activator.CreateInstance(type, xmlDocs);
+
+                using (StreamWriter sw = File.AppendText(VALIDATION_ERRORS_FILE_PATH))
+                {
+                    XadesTValidator valAttr = (XadesTValidator)type.GetCustomAttributes(typeof(XadesTValidator), true)[0];
+                    sw.WriteLine("[" + valAttr.ExecutionOrder + "]");
+                    sw.WriteLine("###### " + valAttr.ValidationTaskName + " ######\n");
+
+                    foreach (var valError in errorCollector.CollectValidationErrors())
+                    {
+                        sw.WriteLine("\t" + valError);
+                    }
+                }
+            }
+        }
+
+        private static SortedList<int, Type> FetchSortedValidators()
+        {
+            SortedList<int, Type> validators = new SortedList<int, Type>();
+
             foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
             {
                 if (type.GetCustomAttributes(typeof(XadesTValidator), true).Length > 0)
                 {
-                    IValidationMessagesCollector errorCollector = (IValidationMessagesCollector)Activator.CreateInstance(type, xmlDocs);
-
-                    using (StreamWriter sw = File.AppendText(VALIDATION_ERRORS_FILE_PATH))
-                    {
-                        XadesTValidator valAttr = (XadesTValidator)type.GetCustomAttributes(typeof(XadesTValidator), true)[0];
-                        sw.WriteLine("###### " + valAttr.ValidationTaskName + " ######");
-
-                        foreach(var valError in errorCollector.CollectValidationErrors())
-                        {
-                            sw.WriteLine(valError);
-                        }
-                    }
+                    XadesTValidator valAttr = (XadesTValidator)type.GetCustomAttributes(typeof(XadesTValidator), true)[0];
+                    validators.Add(valAttr.ExecutionOrder, type);
                 }
             }
+            return validators;
         }
     }
 }
