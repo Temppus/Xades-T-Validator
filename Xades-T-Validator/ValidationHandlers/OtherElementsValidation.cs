@@ -28,11 +28,32 @@ namespace Xades_T_Validator.ValidationHandlers
 
             try
             {
-                if (xmlDoc.DocumentElement.Attributes["Id"] == null)
+                if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature", GetNamespaceManager(xmlDoc)).Attributes["Id"] == null)
                 {
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                 }
-                if (xmlDoc.DocumentElement.Attributes["xmlns:ds"].Value != xmlnsDs)
+                if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature", GetNamespaceManager(xmlDoc)).Attributes["xmlns:ds"].Value != xmlnsDs)
+                {
+                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                }
+            }
+            catch (Exception /*ex*/)
+            {
+                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+            }
+
+            return validationError;
+        }
+
+        [XadesTValidationHandler(ExecutionOrder: 1, Description: "ds:SignatureValue – musí mať Id atribút")]
+        public ValidationError ValidationHandler2(XMLDocumentWrapper docWrapper)
+        {
+            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
+            XmlDocument xmlDoc = docWrapper.XmlDoc;
+
+            try
+            {
+                if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignatureValue", GetNamespaceManager(xmlDoc)).Attributes["Id"] == null)
                 {
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                 }
