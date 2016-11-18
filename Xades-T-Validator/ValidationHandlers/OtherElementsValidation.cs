@@ -142,7 +142,33 @@ namespace Xades_T_Validator.ValidationHandlers
         #endregion
 
         #region KeyInfoValidation
+        [XadesTValidationHandler(ExecutionOrder: 4, Description: "-------KeyInfo musí mať ID atribút")]
+        public ValidationError ValidationHandler2_1(XMLDocumentWrapper docWrapper)
+        {
+            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
+            XmlDocument xmlDoc = docWrapper.XmlDoc;
 
+            //check keyInfo id attribute
+            var keyInfoIdAttribute = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo", GetNamespaceManager(xmlDoc))?.Attributes["Id"];
+
+            if (keyInfoIdAttribute == null)
+                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+
+            //check x509
+            var x509Data = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo/ds:X509Data", GetNamespaceManager(xmlDoc));
+
+            if (x509Data == null)
+                validationError.AppendErrorMessage("KeyInfo musí obsahovať element x509Data");
+            else if(x509Data.SelectSingleNode("//ds:X509Certificate", GetNamespaceManager(xmlDoc)) == null)
+                validationError.AppendErrorMessage("x509Data musí obsahovať element x509Certificate");
+            else if (x509Data.SelectSingleNode("//ds:X509IssuerSerial", GetNamespaceManager(xmlDoc)) == null)
+                validationError.AppendErrorMessage("x509Data musí obsahovať element X509IssuerSerial");
+            else if (x509Data.SelectSingleNode("//ds:X509SubjectName", GetNamespaceManager(xmlDoc)) == null)
+                validationError.AppendErrorMessage("x509Data musí obsahovať element X509SubjectName");
+
+
+            return validationError;
+        }
         #endregion
 
         #region ManifestValidation
