@@ -150,21 +150,21 @@ namespace Xades_T_Validator.ValidationHandlers
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
             //check keyInfo id attribute
-            var keyInfoIdAttribute = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo", GetNamespaceManager(xmlDoc))?.Attributes["Id"];
+            var keyInfoIdAttribute = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo", xmlDoc.NameSpaceManager())?.Attributes["Id"];
 
             if (keyInfoIdAttribute == null)
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
 
             //check x509
-            var x509Data = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo/ds:X509Data", GetNamespaceManager(xmlDoc));
+            var x509Data = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo/ds:X509Data", xmlDoc.NameSpaceManager());
 
             if (x509Data == null)
                 validationError.AppendErrorMessage("KeyInfo musí obsahovať element x509Data");
-            else if(x509Data.SelectSingleNode("//ds:X509Certificate", GetNamespaceManager(xmlDoc)) == null)
+            else if(x509Data.SelectSingleNode("//ds:X509Certificate", xmlDoc.NameSpaceManager()) == null)
                 validationError.AppendErrorMessage("x509Data musí obsahovať element x509Certificate");
-            else if (x509Data.SelectSingleNode("//ds:X509IssuerSerial", GetNamespaceManager(xmlDoc)) == null)
+            else if (x509Data.SelectSingleNode("//ds:X509IssuerSerial", xmlDoc.NameSpaceManager()) == null)
                 validationError.AppendErrorMessage("x509Data musí obsahovať element X509IssuerSerial");
-            else if (x509Data.SelectSingleNode("//ds:X509SubjectName", GetNamespaceManager(xmlDoc)) == null)
+            else if (x509Data.SelectSingleNode("//ds:X509SubjectName", xmlDoc.NameSpaceManager()) == null)
                 validationError.AppendErrorMessage("x509Data musí obsahovať element X509SubjectName");
 
 
