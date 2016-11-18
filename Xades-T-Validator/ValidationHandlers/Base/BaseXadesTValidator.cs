@@ -51,8 +51,7 @@ namespace Xades_T_Validator.ValidationHandlers.Base
                     var attributes = pair.Value.GetCustomAttributes(typeof(XadesTValidationHandlerAttribute), true);
                     if (attributes != null && attributes.Length > 0)
                     {
-                        object[] paramArray = new object[] { xmlWrapper };
-                        ValidationError valError = (ValidationError)pair.Value.Invoke(this, paramArray);
+                        ValidationError valError = (ValidationError)pair.Value.Invoke(this, new object[] { xmlWrapper });
 
                         if (valError.ErrorMessage != null)
                             validationMessages.Add(pair.Key + ".) " + valError.ToString());

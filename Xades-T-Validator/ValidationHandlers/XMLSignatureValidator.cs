@@ -24,16 +24,10 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            try
-            {
-                var canonicalizationMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod", GetNamespaceManager(xmlDoc));
-                if (canonicalizationMethod.Attributes["Algorithm"].Value != "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
-                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-            }
-            catch (Exception /*ex*/)
-            {
+            var canonicalizationMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod", GetNamespaceManager(xmlDoc));
+
+            if (canonicalizationMethod.Attributes["Algorithm"]?.Value != "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-            }
 
             return validationError;
         }
@@ -44,25 +38,19 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            List<String> signatureMethodAlgorithms = new List<string>()
+            List<string> signatureMethodAlgorithms = new List<string>()
             {
-                "http://www.w3.org/2000/09/xmldsig#dsa-sha1", 
+                "http://www.w3.org/2000/09/xmldsig#dsa-sha1",
                 "http://www.w3.org/2000/09/xmldsig#rsa-sha1",
                 "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
                 "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384",
                 "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512"
             };
 
-            try
-            {
-                var signatureMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod", GetNamespaceManager(xmlDoc));
-                if (!signatureMethodAlgorithms.Contains(signatureMethod.Attributes["Algorithm"].Value))
-                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-            }
-            catch (Exception /*ex*/)
-            {
+            var signatureMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod", GetNamespaceManager(xmlDoc));
+
+            if (!signatureMethodAlgorithms.Contains(signatureMethod.Attributes["Algorithm"]?.Value))
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-            }
 
             return validationError;
         }
@@ -73,22 +61,15 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            try
-            {
-                var transforms = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:Transforms/ds:Transform", GetNamespaceManager(xmlDoc));
+            var transforms = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:Transforms/ds:Transform", GetNamespaceManager(xmlDoc));
 
-                for(int i = 0; i < transforms.Count; i++)
-                {
-                    if (transforms[i].Attributes["Algorithm"].Value != "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
-                    {
-                        validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-                        break;
-                    }
-                }
-            }
-            catch (Exception /*ex*/)
+            for (int i = 0; i < transforms.Count; i++)
             {
-                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                if (transforms[i].Attributes["Algorithm"]?.Value != "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
+                {
+                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                    break;
+                }
             }
 
             return validationError;
@@ -100,7 +81,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            List<String> digestMethodAlgorithms = new List<string>()
+            List<string> digestMethodAlgorithms = new List<string>()
             {
                     "http://www.w3.org/2000/09/xmldsig#sha1",
                     "http://www.w3.org/2001/04/xmldsig-more#sha224",
@@ -109,17 +90,12 @@ namespace Xades_T_Validator.ValidationHandlers
                     "http://www.w3.org/2001/04/xmlenc#sha512"
             };
 
-            try
-            {
-                var digestMethods = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:DigestMethod", GetNamespaceManager(xmlDoc));
+            var digestMethods = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:DigestMethod", GetNamespaceManager(xmlDoc));
 
-                for(int i = 0; i < digestMethods.Count; i++)
-                if (!digestMethodAlgorithms.Contains(digestMethods[i].Attributes["Algorithm"].Value))
-                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-            }
-            catch (Exception /*ex*/)
+            for (int i = 0; i < digestMethods.Count; i++)
             {
-                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                if (!digestMethodAlgorithms.Contains(digestMethods[i].Attributes["Algorithm"]?.Value))
+                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
 
             return validationError;

@@ -120,7 +120,7 @@ namespace Xades_T_Validator.ValidationHandlers
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                 }
             }
-            catch (Exception /*ex*/)
+            catch (Exception ex)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }

@@ -21,15 +21,10 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            try
-            {
-                if (xmlDoc.DocumentElement.Attributes["xmlns:xzep"].Value != "http://www.ditec.sk/ep/signature_formats/xades_zep/v1.0")
-                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-            }
-            catch (Exception /*ex*/)
-            {
+            string zepURI = xmlDoc.DocumentElement.Attributes["xmlns:xzep"]?.Value;
+
+            if (zepURI != "http://www.ditec.sk/ep/signature_formats/xades_zep/v1.0")
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-            }
 
             return validationError;
         }
@@ -40,15 +35,10 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            try
-            {
-                if (xmlDoc.DocumentElement.Attributes["xmlns:ds"].Value != "http://www.w3.org/2000/09/xmldsig#")
-                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-            }
-            catch (Exception /*ex*/)
-            {
+            string dsURI = xmlDoc.DocumentElement.Attributes["xmlns:ds"]?.Value;
+
+            if (dsURI != "http://www.w3.org/2000/09/xmldsig#")
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-            }
 
             return validationError;
         }
