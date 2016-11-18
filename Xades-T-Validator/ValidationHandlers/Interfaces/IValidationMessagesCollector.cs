@@ -8,6 +8,6 @@ namespace Xades_T_Validator.ValidationHandlers.Interfaces
 {
     public interface IValidationMessagesCollector
     {
-        IEnumerable<string> CollectValidationErrors();
+        SortedSet<string> CollectValidationErrors();
     }
 }

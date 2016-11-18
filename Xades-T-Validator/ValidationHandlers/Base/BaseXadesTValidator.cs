@@ -39,9 +39,9 @@ namespace Xades_T_Validator.ValidationHandlers.Base
             return attr.Description;
         }
 
-        public IEnumerable<string> CollectValidationErrors()
+        public SortedSet<string> CollectValidationErrors()
         {
-            List<string> validationMessages = new List<string>();
+            SortedSet<string> validationMessages = new SortedSet<string>();
 
             foreach (var xmlWrapper in _documentWrappers)
             {
