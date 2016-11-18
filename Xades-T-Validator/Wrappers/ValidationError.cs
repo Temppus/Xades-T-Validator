@@ -19,7 +19,26 @@ namespace Xades_T_Validator.Wrappers
 
         public override string ToString()
         {
-            return FileName + " -> " + ErrorMessage;
+            return FileName + " -> - " + ErrorMessage;
+        }
+
+        public void AppendErrorMessage(string message)
+        {
+            if (ErrorMessage == null)
+            {
+                ErrorMessage = message;
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder("\n\t");
+
+            for (int i = 0; i < FileName.Length + 8; i++)
+                sb.Append(" ");
+
+            sb.Append("- ");
+            sb.Append(message);
+
+            ErrorMessage += sb.ToString();
         }
     }
 }
