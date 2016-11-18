@@ -43,8 +43,6 @@ namespace Xades_T_Validator.ValidationHandlers
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
 
-
-
             return validationError;
         }
 
@@ -69,29 +67,44 @@ namespace Xades_T_Validator.ValidationHandlers
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
             XmlNodeList references = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference", GetNamespaceManager(xmlDoc));
+
+            if (references.Count == 0)
+            {
+                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                return validationError;
+            }
+
             foreach (XmlElement xmlRef in references)
             {
-                string refType = xmlRef.Attributes["Type"].Value;
-                string targetId = xmlRef.Attributes["URI"].Value.Substring(1);
+                string refType = xmlRef.Attributes["Type"]?.Value;
+                string targetId = xmlRef.Attributes["URI"]?.Value?.Substring(1);
                 var targetElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature//*[@Id='" + targetId + "']", GetNamespaceManager(xmlDoc));
-                KeyValuePair<string, string> referedElement = new KeyValuePair<string, string>(targetElement?.Name != null ? targetElement.Name : "", refType);
-                if (!refElementsInfos.Contains(referedElement))
+
+                if (refType == null || targetId == null || targetElement == null)
+                {
+                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                    return validationError;
+                }
+
+                if (!refElementsInfos.Contains(new KeyValuePair<string, string>(targetElement.Name, refType)))
                 {
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                 }
             }
+
             if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#Object']", GetNamespaceManager(xmlDoc)) == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
-            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#SignatureProperties']", GetNamespaceManager(xmlDoc)) == null)
+            else if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#SignatureProperties']", GetNamespaceManager(xmlDoc)) == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
-            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://uri.etsi.org/01903#SignedProperties']", GetNamespaceManager(xmlDoc)) == null)
+            else if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://uri.etsi.org/01903#SignedProperties']", GetNamespaceManager(xmlDoc)) == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
+
             return validationError;
         }
 
