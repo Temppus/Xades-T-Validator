@@ -63,10 +63,10 @@ namespace Xades_T_Validator.ValidationHandlers
         [XadesTValidationHandler(
             ExecutionOrder: 3, 
             Description: "overenie existencie referencií v ds:SignedInfo a hodnôt atribútov Id a Type voči profilu XAdES_ZEP pre: " + 
-            "ds:KeyInfo element, " + 
-            "ds: SignatureProperties element, " + 
-            "xades: SignedProperties element, " + 
-            "všetky ostatné referencie v rámci ds: SignedInfo musia byť referenciami na ds: Manifest elementy")]
+                            "ds:KeyInfo element, " + 
+                            "ds: SignatureProperties element, " + 
+                            "xades: SignedProperties element, " + 
+                            "všetky ostatné referencie v rámci ds: SignedInfo musia byť referenciami na ds: Manifest elementy")]
         public ValidationError ValidateReferences(XMLDocumentWrapper docWrapper)
         {
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
@@ -143,6 +143,27 @@ namespace Xades_T_Validator.ValidationHandlers
 
         #region KeyInfoValidation
 
+        #endregion
+
+        #region ManifestValidation
+
+        [XadesTValidationHandler(
+            ExecutionOrder: 6,
+            Description: "overenie ds:Manifest elementov:" + 
+                            "každý ds: Manifest element musí mať Id atribút," + 
+                            "ds: Transforms musí byť z množiny podporovaných algoritmov pre daný element podľa profilu XAdES_ZEP," + 
+                            "ds: DigestMethod – musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP," + 
+                            "overenie hodnoty Type atribútu voči profilu XAdES_ZEP," + 
+                            "každý ds: Manifest element musí obsahovať práve jednu referenciu na ds: Object")]
+        public ValidationError ValidateManifestElement(XMLDocumentWrapper docWrapper)
+        {
+            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
+            XmlDocument xmlDoc = docWrapper.XmlDoc;
+
+            XmlNodeList manifests = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:Object/ds:Manifest", GetNamespaceManager(xmlDoc));
+            
+            return validationError;
+        }
         #endregion
     }
 }
