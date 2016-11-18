@@ -9,6 +9,7 @@ using Xades_T_Validator.Attributes;
 using Xades_T_Validator.ValidationHandlers.Base;
 using Xades_T_Validator.Wrappers;
 using Xades_T_Validator.Extensions;
+using Xades_T_Validator.XMLHelpers;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -159,7 +160,12 @@ namespace Xades_T_Validator.ValidationHandlers
         #endregion
 
         #region KeyInfoValidation
+        [XadesTValidationHandler(ExecutionOrder: 4, Description: "KeyInfo musí mať ID atribút")]
 
+            else if(x509Data.SelectSingleNode("ds:X509Certificate", xmlDoc.NameSpaceManager()) == null)
+            else if (x509Data.SelectSingleNode("ds:X509IssuerSerial", xmlDoc.NameSpaceManager()) == null)
+            else if (x509Data.SelectSingleNode("ds:X509SubjectName", xmlDoc.NameSpaceManager()) == null)
+            XmlNodeHelper.GetCertificate(docWrapper);
         #endregion
 
         #region ManifestValidation
