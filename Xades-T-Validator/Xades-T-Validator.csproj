@@ -59,6 +59,7 @@
     <Compile Include="Wrappers\ValidationError.cs" />
     <Compile Include="Wrappers\XMLDocumentWrapper.cs" />
     <Compile Include="XMLHelpers\XmlLoaderHelper.cs" />
+    <Compile Include="XMLHelpers\XmlNodeHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
