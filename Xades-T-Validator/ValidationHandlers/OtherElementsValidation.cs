@@ -185,7 +185,10 @@ namespace Xades_T_Validator.ValidationHandlers
 
             //check certificate element
             if (x509Data.SelectSingleNode("ds:X509Certificate", xmlDoc.NameSpaceManager()) == null)
+            {
                 validationError.AppendErrorMessage("x509Data musí obsahovať element x509Certificate");
+                return validationError;
+            }
 
             X509Certificate certificate =  XmlNodeHelper.GetCertificate(docWrapper);
 
