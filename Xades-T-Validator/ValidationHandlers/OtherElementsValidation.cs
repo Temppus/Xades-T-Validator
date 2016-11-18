@@ -16,7 +16,11 @@ namespace Xades_T_Validator.ValidationHandlers
     partial class OtherElementsValidation : BaseXadesTValidator
     {
         private const string xmlnsDs = "http://www.w3.org/2000/09/xmldsig#";
+        private const string refType = "http://www.w3.org/2000/09/xmldsig#Object";
+        
         private Dictionary<string, string> refElementsInfos;
+        private List<string> manifestTransformAlgorithms;
+        private List<string> digestMethodAlgorithms;
 
         public OtherElementsValidation(IEnumerable<XMLDocumentWrapper> documentWrappers) : base(documentWrappers)
         {
@@ -25,6 +29,18 @@ namespace Xades_T_Validator.ValidationHandlers
             refElementsInfos.Add("ds:SignatureProperties", "http://www.w3.org/2000/09/xmldsig#SignatureProperties");
             refElementsInfos.Add("xades:SignedProperties", "http://uri.etsi.org/01903#SignedProperties");
             refElementsInfos.Add("ds:Manifest", "http://www.w3.org/2000/09/xmldsig#Manifest");
+
+            manifestTransformAlgorithms = new List<string>();
+            manifestTransformAlgorithms.Add("http://www.w3.org/TR/2001/REC-xml-c14n-20010315");
+            manifestTransformAlgorithms.Add("http://www.w3.org/2000/09/xmldsig#base64");
+
+            digestMethodAlgorithms = new List<string>();
+            digestMethodAlgorithms.Add("http://www.w3.org/2000/09/xmldsig#sha1");
+            digestMethodAlgorithms.Add("http://www.w3.org/2001/04/xmldsig-more#sha224");
+            digestMethodAlgorithms.Add("http://www.w3.org/2001/04/xmlenc#sha256");
+            digestMethodAlgorithms.Add("http://www.w3.org/2001/04/xmldsig-more#sha384");
+            digestMethodAlgorithms.Add("http://www.w3.org/2001/04/xmlenc#sha512");
+
         }
 
         #region Signature-SignatureValue-SignedInfo
@@ -143,33 +159,7 @@ namespace Xades_T_Validator.ValidationHandlers
         #endregion
 
         #region KeyInfoValidation
-        [XadesTValidationHandler(ExecutionOrder: 4, Description: "-------KeyInfo musí mať ID atribút")]
-        public ValidationError ValidationHandler2_1(XMLDocumentWrapper docWrapper)
-        {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            //check keyInfo id attribute
-            var keyInfoIdAttribute = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo", xmlDoc.NameSpaceManager())?.Attributes["Id"];
-
-            if (keyInfoIdAttribute == null)
-                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-
-            //check x509
-            var x509Data = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo/ds:X509Data", xmlDoc.NameSpaceManager());
-
-            if (x509Data == null)
-                validationError.AppendErrorMessage("KeyInfo musí obsahovať element x509Data");
-            else if(x509Data.SelectSingleNode("//ds:X509Certificate", xmlDoc.NameSpaceManager()) == null)
-                validationError.AppendErrorMessage("x509Data musí obsahovať element x509Certificate");
-            else if (x509Data.SelectSingleNode("//ds:X509IssuerSerial", xmlDoc.NameSpaceManager()) == null)
-                validationError.AppendErrorMessage("x509Data musí obsahovať element X509IssuerSerial");
-            else if (x509Data.SelectSingleNode("//ds:X509SubjectName", xmlDoc.NameSpaceManager()) == null)
-                validationError.AppendErrorMessage("x509Data musí obsahovať element X509SubjectName");
-
-
-            return validationError;
-        }
         #endregion
 
         #region ManifestValidation
@@ -177,18 +167,60 @@ namespace Xades_T_Validator.ValidationHandlers
         [XadesTValidationHandler(
             ExecutionOrder: 6,
             Description: "overenie ds:Manifest elementov:" + 
-                            "každý ds: Manifest element musí mať Id atribút," + 
-                            "ds: Transforms musí byť z množiny podporovaných algoritmov pre daný element podľa profilu XAdES_ZEP," + 
-                            "ds: DigestMethod – musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP," + 
+                            "každý ds:Manifest element musí mať Id atribút," + 
+                            "ds:Transforms musí byť z množiny podporovaných algoritmov pre daný element podľa profilu XAdES_ZEP," + 
+                            "ds:DigestMethod – musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP," + 
                             "overenie hodnoty Type atribútu voči profilu XAdES_ZEP," + 
-                            "každý ds: Manifest element musí obsahovať práve jednu referenciu na ds: Object")]
+                            "každý ds:Manifest element musí obsahovať práve jednu referenciu na ds: Object")]
         public ValidationError ValidateManifestElement(XMLDocumentWrapper docWrapper)
         {
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            XmlNodeList manifests = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:Object/ds:Manifest", xmlDoc.NameSpaceManager());
-            
+            XmlNodeList manifests = xmlDoc.DocumentElement.SelectNodes("ds:Signature/ds:Object/ds:Manifest", xmlDoc.NameSpaceManager());
+            foreach (XmlNode manifest in manifests)
+            {
+                //Manifest/references - count validation (must have one)
+                XmlNodeList manifestReferences = manifest.SelectNodes("ds:Reference", xmlDoc.NameSpaceManager());
+                if (manifestReferences.Count != 1)
+                {
+                    validationError.AppendErrorMessage("overenie ds:Manifest elementov: každý ds:Manifest element musí obsahovať práve jednu referenciu na ds: Object");
+                }
+
+                //Id validation
+                if (manifest.Attributes["Id"] == null)
+                {
+                    validationError.AppendErrorMessage("overenie ds:Manifest elementov: každý ds:Manifest element musí mať Id atribút");
+                }
+
+                //Manifest/reference/transforms/transform - Algorithm validation
+                XmlNodeList manifestTransforms = manifest.SelectNodes("ds:Reference/ds:Transforms/ds:Transform", xmlDoc.NameSpaceManager());
+                foreach (XmlNode transform in manifestTransforms)
+                {
+                    if (!manifestTransformAlgorithms.Contains(transform.Attributes["Algorithm"].Value))
+                    {
+                        validationError.AppendErrorMessage("overenie ds:Manifest elementov: ds:Transforms musí byť z množiny podporovaných algoritmov pre daný element podľa profilu XAdES_ZEP,");
+                    }
+                }
+
+                //Manifest/reference/digestMethod - Algoritm validation
+                XmlNodeList manifestDigestMethods = manifest.SelectNodes("ds:Reference/ds:DigestMethod", xmlDoc.NameSpaceManager());
+                foreach (XmlNode digestMethod in manifestDigestMethods)
+                {
+                    if (!digestMethodAlgorithms.Contains(digestMethod.Attributes["Algorithm"].Value))
+                    {
+                        validationError.AppendErrorMessage("overenie ds:Manifest elementov: ds:DigestMethod – musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP");
+                    }
+                }
+
+                //Manifest/reference - Type validation
+                XmlNode manifestReference = manifest.SelectSingleNode("ds:Reference", xmlDoc.NameSpaceManager());
+                if(manifestReference.Attributes["Type"]?.Value != refType)
+                {
+                    validationError.AppendErrorMessage("overenie ds:Manifest elementov: overenie hodnoty Type atribútu voči profilu XAdES_ZEP");
+                }
+
+            }
             return validationError;
         }
         #endregion
