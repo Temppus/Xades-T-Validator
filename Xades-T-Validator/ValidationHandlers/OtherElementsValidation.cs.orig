@@ -164,65 +164,49 @@ namespace Xades_T_Validator.ValidationHandlers
 
         #region KeyInfoValidation
         [XadesTValidationHandler(ExecutionOrder: 4, Description: "KeyInfo musí mať ID atribút")]
-        public ValidationError ValidationHandler1(XMLDocumentWrapper docWrapper)
-        {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var keyInfoID = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo", xmlDoc.NameSpaceManager())?.Attributes["Id"]?.Value;
-
-            if(keyInfoID == null)
-                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-
-            //check x509
-            var x509Data = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo/ds:X509Data", xmlDoc.NameSpaceManager());
-
+<<<<<<< 722a42b5f23a64558c1cd29457eae7dcbbaca348
+            else if(x509Data.SelectSingleNode("ds:X509Certificate", xmlDoc.NameSpaceManager()) == null)
+            else if (x509Data.SelectSingleNode("ds:X509IssuerSerial", xmlDoc.NameSpaceManager()) == null)
+            else if (x509Data.SelectSingleNode("ds:X509SubjectName", xmlDoc.NameSpaceManager()) == null)
+            XmlNodeHelper.GetCertificate(docWrapper);
+=======
             if (x509Data == null)
             {
                 validationError.AppendErrorMessage("KeyInfo musí obsahovať element x509Data");
                 return validationError;
             }
 
-            //check certificate element
             if (x509Data.SelectSingleNode("ds:X509Certificate", xmlDoc.NameSpaceManager()) == null)
                 validationError.AppendErrorMessage("x509Data musí obsahovať element x509Certificate");
 
+            if (x509Data.SelectSingleNode("ds:X509IssuerSerial", xmlDoc.NameSpaceManager()) == null)
+                validationError.AppendErrorMessage("x509Data musí obsahovať element X509IssuerSerial");
+
+            if (x509Data.SelectSingleNode("ds:X509SubjectName", xmlDoc.NameSpaceManager()) == null)
+                validationError.AppendErrorMessage("x509Data musí obsahovať element X509SubjectName");
+
+            //ds:X509IssuerSerial a ds:X509SubjectName
             X509Certificate certificate =  XmlNodeHelper.GetCertificate(docWrapper);
 
-            //check SubjectName
-            if (x509Data.SelectSingleNode("ds:X509SubjectName", xmlDoc.NameSpaceManager()) == null)
-                validationError.AppendErrorMessage("x509Data musí obsahovať element SubjectName");
-            else 
-            {
-                var X509SubjectName = x509Data.SelectSingleNode("ds:X509SubjectName", xmlDoc.NameSpaceManager());
-
-                if (X509SubjectName.InnerText != certificate.CertificateStructure.Subject.ToString())
-                    validationError.AppendErrorMessage("X509SubjectName sa nezhoduje");
-            }
-
-            //check IssuerSerial
-            if (x509Data.SelectSingleNode("ds:X509IssuerSerial", xmlDoc.NameSpaceManager()) == null)
-                validationError.AppendErrorMessage("x509Data musí obsahovať element IssuerSerial");
-            else
-            {
-                var X509IssuerSerial = x509Data.SelectSingleNode("ds:X509IssuerSerial/ds:X509IssuerName", xmlDoc.NameSpaceManager());
-
-                X509Name xmlName = new X509Name(X509IssuerSerial.InnerText.Replace("S=", "ST="));
-
-                if (!xmlName.Equivalent(certificate.CertificateStructure.Issuer))
-                    validationError.AppendErrorMessage("IssuerSerial sa nezhoduje");
-            }
-
-            //check SerialNumber
+            var X509SubjectName = x509Data.SelectSingleNode("ds:X509SubjectName", xmlDoc.NameSpaceManager());
+            var X509IssuerSerial = x509Data.SelectSingleNode("ds:X509IssuerSerial/ds:X509IssuerName", xmlDoc.NameSpaceManager());
             var X509SerialNumber = x509Data.SelectSingleNode("ds:X509IssuerSerial/ds:X509SerialNumber", xmlDoc.NameSpaceManager());
 
-            if(X509SerialNumber == null)
-                validationError.AppendErrorMessage("x509Data musí obsahovať element SerialNumber");
-            else if (X509SerialNumber.InnerText != certificate.SerialNumber.ToString())
+            X509Name xmlName = new X509Name(X509IssuerSerial.InnerText.Replace("S=","ST="));
+
+            if (!xmlName.Equivalent(certificate.CertificateStructure.Issuer))
+                validationError.AppendErrorMessage("IssuerSerial sa nezhoduje");
+
+            if (X509SerialNumber.InnerText != certificate.SerialNumber.ToString())
                 validationError.AppendErrorMessage("X509SerialNumber sa nezhoduje");
+
+            if (X509SubjectName.InnerText != certificate.CertificateStructure.Subject.ToString())
+                validationError.AppendErrorMessage("X509SubjectName sa nezhoduje");
 
             return validationError;
         }
+>>>>>>> Added x509 reference verification.
         #endregion
 
         #region ManifestValidation
