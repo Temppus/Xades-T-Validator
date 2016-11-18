@@ -20,19 +20,6 @@ namespace Xades_T_Validator.ValidationHandlers.Base
             _documentWrappers = documentWrappers;
         }
 
-
-        public XmlNamespaceManager GetNamespaceManager(XmlDocument xmlDoc)
-        {
-            XmlNamespaceManager namespaces = new XmlNamespaceManager(xmlDoc.NameTable);
-
-            namespaces.AddNamespace("xades", "http://uri.etsi.org/01903/v1.3.2#");
-            namespaces.AddNamespace("ds", "http://www.w3.org/2000/09/xmldsig#");
-            namespaces.AddNamespace("xzep", "http://www.ditec.sk/ep/signature_formats/xades_zep/v1.01");
-            namespaces.AddNamespace("xzep", "http://www.ditec.sk/ep/signature_formats/xades_zep/v1.0");
-
-            return namespaces;
-        }
-
         public string GetErrorMessage(MethodBase methodbase)
         {
             XadesTValidationHandlerAttribute attr = (XadesTValidationHandlerAttribute)methodbase.GetCustomAttributes(typeof(XadesTValidationHandlerAttribute), true)[0];

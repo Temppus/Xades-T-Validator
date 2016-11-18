@@ -8,6 +8,7 @@ using System.Xml;
 using Xades_T_Validator.Attributes;
 using Xades_T_Validator.ValidationHandlers.Base;
 using Xades_T_Validator.Wrappers;
+using Xades_T_Validator.Extensions;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -34,11 +35,11 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature", GetNamespaceManager(xmlDoc)).Attributes["Id"] == null)
+            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature", xmlDoc.NameSpaceManager()).Attributes["Id"] == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
-            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature", GetNamespaceManager(xmlDoc)).Attributes["xmlns:ds"].Value != xmlnsDs)
+            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature", xmlDoc.NameSpaceManager()).Attributes["xmlns:ds"].Value != xmlnsDs)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
@@ -52,7 +53,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignatureValue", GetNamespaceManager(xmlDoc)).Attributes["Id"] == null)
+            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignatureValue", xmlDoc.NameSpaceManager()).Attributes["Id"] == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
@@ -72,13 +73,13 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            XmlNodeList references = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference", GetNamespaceManager(xmlDoc));
+            XmlNodeList references = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference", xmlDoc.NameSpaceManager());
 
             foreach (XmlElement xmlRef in references)
             {
                 string refType = xmlRef.Attributes["Type"]?.Value;
                 string targetId = xmlRef.Attributes["URI"]?.Value?.Substring(1);
-                var targetElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature//*[@Id='" + targetId + "']", GetNamespaceManager(xmlDoc));
+                var targetElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature//*[@Id='" + targetId + "']", xmlDoc.NameSpaceManager());
 
                 if (refType == null || targetId == null || targetElement == null)
                 {
@@ -92,15 +93,15 @@ namespace Xades_T_Validator.ValidationHandlers
                 }
             }
 
-            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#Object']", GetNamespaceManager(xmlDoc)) == null)
+            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#Object']", xmlDoc.NameSpaceManager()) == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
-            else if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#SignatureProperties']", GetNamespaceManager(xmlDoc)) == null)
+            else if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#SignatureProperties']", xmlDoc.NameSpaceManager()) == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
-            else if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://uri.etsi.org/01903#SignedProperties']", GetNamespaceManager(xmlDoc)) == null)
+            else if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://uri.etsi.org/01903#SignedProperties']", xmlDoc.NameSpaceManager()) == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
@@ -119,19 +120,19 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:Object/ds:SignatureProperties", GetNamespaceManager(xmlDoc)).Attributes["Id"] == null)
+            if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:Object/ds:SignatureProperties", xmlDoc.NameSpaceManager()).Attributes["Id"] == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
-            XmlNode signatureVersion = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:Object/ds:SignatureProperties/ds:SignatureProperty/xzep:SignatureVersion", GetNamespaceManager(xmlDoc));
-            XmlNode productInfos = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:Object/ds:SignatureProperties/ds:SignatureProperty/xzep:ProductInfos", GetNamespaceManager(xmlDoc));
+            XmlNode signatureVersion = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:Object/ds:SignatureProperties/ds:SignatureProperty/xzep:SignatureVersion", xmlDoc.NameSpaceManager());
+            XmlNode productInfos = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:Object/ds:SignatureProperties/ds:SignatureProperty/xzep:ProductInfos", xmlDoc.NameSpaceManager());
             if (signatureVersion == null || productInfos == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                 return validationError;
             }
 
-            string signatureId = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature", GetNamespaceManager(xmlDoc))?.Attributes["Id"]?.Value;
+            string signatureId = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature", xmlDoc.NameSpaceManager())?.Attributes["Id"]?.Value;
             if (signatureVersion.ParentNode.Attributes["Target"].Value.Substring(1) != signatureId || productInfos.ParentNode.Attributes["Target"].Value.Substring(1) != signatureId)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -186,7 +187,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            XmlNodeList manifests = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:Object/ds:Manifest", GetNamespaceManager(xmlDoc));
+            XmlNodeList manifests = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:Object/ds:Manifest", xmlDoc.NameSpaceManager());
             
             return validationError;
         }

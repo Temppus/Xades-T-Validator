@@ -8,6 +8,7 @@ using System.Xml;
 using Xades_T_Validator.Attributes;
 using Xades_T_Validator.ValidationHandlers.Base;
 using Xades_T_Validator.Wrappers;
+using Xades_T_Validator.Extensions;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -24,7 +25,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var canonicalizationMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod", GetNamespaceManager(xmlDoc));
+            var canonicalizationMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod", xmlDoc.NameSpaceManager());
 
             if (canonicalizationMethod.Attributes["Algorithm"]?.Value != "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -47,7 +48,7 @@ namespace Xades_T_Validator.ValidationHandlers
                 "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512"
             };
 
-            var signatureMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod", GetNamespaceManager(xmlDoc));
+            var signatureMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod", xmlDoc.NameSpaceManager());
 
             if (!signatureMethodAlgorithms.Contains(signatureMethod.Attributes["Algorithm"]?.Value))
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -61,7 +62,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var transforms = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:Transforms/ds:Transform", GetNamespaceManager(xmlDoc));
+            var transforms = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:Transforms/ds:Transform", xmlDoc.NameSpaceManager());
 
             for (int i = 0; i < transforms.Count; i++)
             {
@@ -90,7 +91,7 @@ namespace Xades_T_Validator.ValidationHandlers
                     "http://www.w3.org/2001/04/xmlenc#sha512"
             };
 
-            var digestMethods = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:DigestMethod", GetNamespaceManager(xmlDoc));
+            var digestMethods = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:DigestMethod", xmlDoc.NameSpaceManager());
 
             for (int i = 0; i < digestMethods.Count; i++)
             {
