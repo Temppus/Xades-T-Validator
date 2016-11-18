@@ -60,7 +60,13 @@ namespace Xades_T_Validator.ValidationHandlers
             return validationError;
         }
 
-        [XadesTValidationHandler(ExecutionOrder: 3, Description: "overenie existencie referencií v ds:SignedInfo a hodnôt atribútov Id a Type voči profilu XAdES_ZEP pre: ds:KeyInfo element, ds: SignatureProperties element, xades: SignedProperties element, všetky ostatné referencie v rámci ds: SignedInfo musia byť referenciami na ds: Manifest elementy")]
+        [XadesTValidationHandler(
+            ExecutionOrder: 3, 
+            Description: "overenie existencie referencií v ds:SignedInfo a hodnôt atribútov Id a Type voči profilu XAdES_ZEP pre: " + 
+            "ds:KeyInfo element, " + 
+            "ds: SignatureProperties element, " + 
+            "xades: SignedProperties element, " + 
+            "všetky ostatné referencie v rámci ds: SignedInfo musia byť referenciami na ds: Manifest elementy")]
         public ValidationError ValidateReferences(XMLDocumentWrapper docWrapper)
         {
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
@@ -114,6 +120,19 @@ namespace Xades_T_Validator.ValidationHandlers
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
             if (xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:Object/ds:SignatureProperties", GetNamespaceManager(xmlDoc)).Attributes["Id"] == null)
+            {
+                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+            }
+            XmlNode signatureVersion = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:Object/ds:SignatureProperties/ds:SignatureProperty/xzep:SignatureVersion", GetNamespaceManager(xmlDoc));
+            XmlNode productInfos = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:Object/ds:SignatureProperties/ds:SignatureProperty/xzep:ProductInfos", GetNamespaceManager(xmlDoc));
+            if (signatureVersion == null || productInfos == null)
+            {
+                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                return validationError;
+            }
+
+            string signatureId = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature", GetNamespaceManager(xmlDoc))?.Attributes["Id"]?.Value;
+            if (signatureVersion.ParentNode.Attributes["Target"].Value.Substring(1) != signatureId || productInfos.ParentNode.Attributes["Target"].Value.Substring(1) != signatureId)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
