@@ -109,7 +109,7 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(
-            ExecutionOrder: 4, 
+            ExecutionOrder: 5, 
             Description: "overenie obsahu ds:SignatureProperties:" + 
                             "musí mať Id atribút," + 
                             "musí obsahovať dva elementy ds: SignatureProperty pre xzep: SignatureVersion a xzep: ProductInfos," + 
