@@ -68,12 +68,6 @@ namespace Xades_T_Validator.ValidationHandlers
 
             XmlNodeList references = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference", GetNamespaceManager(xmlDoc));
 
-            if (references.Count == 0)
-            {
-                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-                return validationError;
-            }
-
             foreach (XmlElement xmlRef in references)
             {
                 string refType = xmlRef.Attributes["Type"]?.Value;
