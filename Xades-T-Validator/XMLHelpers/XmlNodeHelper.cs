@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Org.BouncyCastle.X509;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -16,11 +16,12 @@ namespace Xades_T_Validator.XMLHelpers
         {
             XmlDocument xmlDoc = docWrapper.XmlDoc;
             var encodedCertificate = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate", xmlDoc.NameSpaceManager());
+
+            var parser = new X509CertificateParser();
             byte[] certificateBytes = Convert.FromBase64String(encodedCertificate.InnerText);
+            var bouncyCertificate = parser.ReadCertificate(certificateBytes);
 
-            X509Certificate certificate = new X509Certificate(certificateBytes);
-
-            return certificate;
+            return bouncyCertificate;
         }
     }
 }

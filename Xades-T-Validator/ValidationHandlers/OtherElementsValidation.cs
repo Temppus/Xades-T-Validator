@@ -10,6 +10,9 @@ using Xades_T_Validator.ValidationHandlers.Base;
 using Xades_T_Validator.Wrappers;
 using Xades_T_Validator.Extensions;
 using Xades_T_Validator.XMLHelpers;
+using Org.BouncyCastle.X509;
+using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Asn1;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -162,10 +165,32 @@ namespace Xades_T_Validator.ValidationHandlers
         #region KeyInfoValidation
         [XadesTValidationHandler(ExecutionOrder: 4, Description: "KeyInfo musí mať ID atribút")]
 
-            else if(x509Data.SelectSingleNode("ds:X509Certificate", xmlDoc.NameSpaceManager()) == null)
-            else if (x509Data.SelectSingleNode("ds:X509IssuerSerial", xmlDoc.NameSpaceManager()) == null)
-            else if (x509Data.SelectSingleNode("ds:X509SubjectName", xmlDoc.NameSpaceManager()) == null)
-            XmlNodeHelper.GetCertificate(docWrapper);
+            {
+                return validationError;
+            }
+
+            if (x509Data.SelectSingleNode("ds:X509Certificate", xmlDoc.NameSpaceManager()) == null)
+
+            if (x509Data.SelectSingleNode("ds:X509IssuerSerial", xmlDoc.NameSpaceManager()) == null)
+
+            if (x509Data.SelectSingleNode("ds:X509SubjectName", xmlDoc.NameSpaceManager()) == null)
+            //ds:X509IssuerSerial a ds:X509SubjectName
+            X509Certificate certificate =  XmlNodeHelper.GetCertificate(docWrapper);
+
+            var X509SubjectName = x509Data.SelectSingleNode("ds:X509SubjectName", xmlDoc.NameSpaceManager());
+            var X509IssuerSerial = x509Data.SelectSingleNode("ds:X509IssuerSerial/ds:X509IssuerName", xmlDoc.NameSpaceManager());
+            var X509SerialNumber = x509Data.SelectSingleNode("ds:X509IssuerSerial/ds:X509SerialNumber", xmlDoc.NameSpaceManager());
+
+            X509Name xmlName = new X509Name(X509IssuerSerial.InnerText.Replace("S=","ST="));
+
+            if (!xmlName.Equivalent(certificate.CertificateStructure.Issuer))
+                validationError.AppendErrorMessage("IssuerSerial sa nezhoduje");
+
+            if (X509SerialNumber.InnerText != certificate.SerialNumber.ToString())
+                validationError.AppendErrorMessage("X509SerialNumber sa nezhoduje");
+
+            if (X509SubjectName.InnerText != certificate.CertificateStructure.Subject.ToString())
+                validationError.AppendErrorMessage("X509SubjectName sa nezhoduje");
         #endregion
 
         #region ManifestValidation
