@@ -58,5 +58,21 @@ namespace Xades_T_Validator.Enums
                 { "ds:Manifest", "http://www.w3.org/2000/09/xmldsig#Manifest"}
             };
         }
+
+        public class Cryptography
+        {
+            /// <summary>
+            /// Dictionary of XAdES_ZEP supported cryptography algorihtms for signature
+            /// </summary>
+            public static readonly Dictionary<string, string> SupportedSignatureSchemasMappings = new Dictionary<string, string>
+            {
+                { "http://www.w3.org/2000/09/xmldsig#dsa-sha1", "SHA1withDSA"},
+                { "http://www.w3.org/2000/09/xmldsig#rsa-sha1", "SHA1withRSA/ISO9796-2"},
+                { "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", "SHA256withRSA"},
+                { "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384", "SHA384withRSA"},
+                { "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512", "SHA512withRSA"}
+            };
+        }
+
     }
 }

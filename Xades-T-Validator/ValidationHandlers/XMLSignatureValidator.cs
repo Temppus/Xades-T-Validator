@@ -40,18 +40,9 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            List<string> signatureMethodAlgorithms = new List<string>()
-            {
-                "http://www.w3.org/2000/09/xmldsig#dsa-sha1",
-                "http://www.w3.org/2000/09/xmldsig#rsa-sha1",
-                "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
-                "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384",
-                "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512"
-            };
-
             var signatureMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod", xmlDoc.NameSpaceManager());
 
-            if (!signatureMethodAlgorithms.Contains(signatureMethod.Attributes["Algorithm"]?.Value))
+            if (!ValidationEnums.Cryptography.SupportedSignatureSchemasMappings.ContainsKey(signatureMethod.Attributes["Algorithm"]?.Value))
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
 
             return validationError;

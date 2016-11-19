@@ -16,6 +16,11 @@ using Org.BouncyCastle.Crypto.Tls;
 using System.IO;
 using System.Security.Cryptography;
 using System.Xml.Serialization;
+using Xades_T_Validator.XMLHelpers;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Security;
+using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Crypto.Parameters;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -26,8 +31,8 @@ namespace Xades_T_Validator.ValidationHandlers
         {
         }
 
-        [XadesTValidationHandler(ExecutionOrder: 1, Description: "Overenie hodnoty podpisu ds:SignatureValue a referencií v ds:SignedInfo.")]
-        public ValidationError ValidationHandler1(XMLDocumentWrapper docWrapper)
+        [XadesTValidationHandler(ExecutionOrder: 1, Description: "Overenie hodnôt odtlačkov ds:DigestValue")]
+        public ValidationError DigestValueVerificationHandler(XMLDocumentWrapper docWrapper)
         {
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
@@ -63,7 +68,7 @@ namespace Xades_T_Validator.ValidationHandlers
                     }
 
                     XmlDocument manifestDoc = new XmlDocument();
-                    xmlDoc.PreserveWhitespace = true;
+                    manifestDoc.PreserveWhitespace = true;
                     manifestDoc.LoadXml(manifestNode.OuterXml);
 
                     XmlDsigC14NTransform c14n = new XmlDsigC14NTransform(false);
@@ -79,6 +84,62 @@ namespace Xades_T_Validator.ValidationHandlers
                         validationError.AppendErrorMessage("Digest values do not match.");
                     }
                 }
+            }
+
+            return validationError;
+        }
+
+        [XadesTValidationHandler(ExecutionOrder: 2, Description: "Overenie hodnoty ds:SignatureValue pomocou pripojeného podpisového certifikátu v ds:KeyInfo")]
+        public ValidationError SignatureValueVerificationHandler(XMLDocumentWrapper docWrapper)
+        {
+            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
+            XmlDocument xmlDoc = docWrapper.XmlDoc;
+
+            var signedInfoElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo", xmlDoc.NameSpaceManager());
+            var signatureMethodElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod", xmlDoc.NameSpaceManager());
+            var canonicalizationMethodElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod", xmlDoc.NameSpaceManager());
+            var signatureValueElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignatureValue", xmlDoc.NameSpaceManager());
+
+            if (signatureValueElement == null) return validationError.AppendErrorMessage(nameof(signatureValueElement) + " missing");
+            if (signatureMethodElement == null) return validationError.AppendErrorMessage(nameof(signatureMethodElement) + " missing");
+            if (canonicalizationMethodElement == null) return validationError.AppendErrorMessage(nameof(canonicalizationMethodElement) + " missing");
+            if (signedInfoElement == null) return validationError.AppendErrorMessage(nameof(signedInfoElement) + " missing");
+
+            var certificate = XmlNodeHelper.GetX509Certificate(docWrapper);
+
+            if (certificate == null)
+                return validationError.AppendErrorMessage("X509Certificate element is missing");
+
+            var canMethod = canonicalizationMethodElement.Attributes["Algorithm"]?.Value;
+
+            if (canMethod != ValidationEnums.Canonicalization.CanonicalizationMethod)
+                return validationError.AppendErrorMessage($"Not supported cannonicalization method. {canMethod}");
+
+            XmlDocument signedInfoDoc = new XmlDocument();
+            xmlDoc.PreserveWhitespace = true;
+            signedInfoDoc.LoadXml(signedInfoElement.OuterXml);
+
+            XmlDsigC14NTransform c14n = new XmlDsigC14NTransform(false);
+            c14n.LoadInput(signedInfoDoc);
+
+            MemoryStream s = (MemoryStream)c14n.GetOutput();
+            var digestBytes = s.ToArray();
+
+            string singnatureAlgorithm = signatureMethodElement.Attributes["Algorithm"]?.Value;
+
+            if (!ValidationEnums.Cryptography.SupportedSignatureSchemasMappings.ContainsKey(singnatureAlgorithm))
+                return validationError.AppendErrorMessage($"Not supported signing algorithm {singnatureAlgorithm}");
+
+            var signingAlgo = ValidationEnums.Cryptography.SupportedSignatureSchemasMappings[singnatureAlgorithm];
+
+            AsymmetricKeyParameter publicKey = certificate.GetPublicKey();
+            ISigner signer = SignerUtilities.GetSigner(signingAlgo);
+            signer.Init(false, publicKey);
+            signer.BlockUpdate(digestBytes, 0, digestBytes.Length);
+
+            if (!signer.VerifySignature(Convert.FromBase64String(signatureValueElement.InnerText)))
+            {
+                return validationError.AppendErrorMessage("Cannot verify signature with publick key.");
             }
 
             return validationError;
