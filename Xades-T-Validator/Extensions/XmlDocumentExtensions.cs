@@ -30,5 +30,10 @@ namespace Xades_T_Validator.Extensions
         {
             return xmlDoc.DocumentElement.SelectNodes(xPath, xmlDoc.NameSpaceManager());
         }
+
+        public static string AtrValue(this XmlNode xmlNode, string atrName)
+        {
+            return xmlNode.Attributes[atrName]?.Value;
+        }
     }
 }
