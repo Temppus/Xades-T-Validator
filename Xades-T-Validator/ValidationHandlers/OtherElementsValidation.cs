@@ -14,6 +14,8 @@ using Org.BouncyCastle.X509;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Asn1;
 using Xades_T_Validator.Enums;
+using System.IO;
+using System.Security.Cryptography.Xml;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -266,6 +268,69 @@ namespace Xades_T_Validator.ValidationHandlers
                     validationError.AppendErrorMessage("overenie ds:Manifest elementov: overenie hodnoty Type atribútu voči profilu XAdES_ZEP");
                 }
 
+            }
+            return validationError;
+        }
+
+        [XadesTValidationHandler(
+            ExecutionOrder: 7,
+            Description: "overenie referencií v elementoch ds:Manifest: "+
+                            "dereferencovanie URI, aplikovanie príslušnej ds: Transforms transformácie(pri base64 decode)," + 
+                            "overenie hodnoty ds: DigestValue")]
+        public ValidationError ValidateManifestReference(XMLDocumentWrapper docWrapper)
+        {
+            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
+            XmlDocument xmlDoc = docWrapper.XmlDoc;
+
+            XmlNodeList manifestReference = xmlDoc.DocumentElement.SelectNodes("ds:Signature/ds:Object/ds:Manifest/ds:Reference", xmlDoc.NameSpaceManager());
+            foreach (XmlNode reference in manifestReference)
+            {
+                //dereferencing
+                XmlNode referencedObject = xmlDoc.DocumentElement.SelectSingleNode("ds:Object[@Id='" + reference.Attributes["URI"].Value.Substring(1) + "']", xmlDoc.NameSpaceManager());
+                if (referencedObject == null)
+                {
+                    validationError.AppendErrorMessage("referenced object does not exist");
+                    return validationError;
+                }
+
+                //getting single xml element
+                XmlDocument referencedDocument = new XmlDocument();
+                referencedDocument.PreserveWhitespace = true;
+                referencedDocument.LoadXml(referencedObject.OuterXml);
+
+                /*
+                //getting byte array of that element
+                MemoryStream xmlStream = new MemoryStream();
+                referencedDocument.Save(xmlStream);
+                byte[] referencedElementByte = xmlStream.ToArray();
+                */
+
+                //applying transformations
+                XmlNodeList transforms = reference.SelectNodes("ds:Transforms/ds:Transform", xmlDoc.NameSpaceManager());
+                string digestAlgo = reference.SelectSingleNode("ds:DigestMethod", xmlDoc.NameSpaceManager()).Attributes["Algorithm"].Value;
+                foreach (XmlNode transform in transforms)
+                {
+                    string digestOutputBase64String = string.Empty;
+                    if (transform.Attributes["Algorithm"].Value == "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
+                    {
+                        XmlDsigC14NTransform c14n = new XmlDsigC14NTransform(false);
+                        c14n.LoadInput(referencedDocument);
+                        var outputArray = c14n.GetDigestedOutput(ValidationEnums.HashAlgorithms.SHAMappings[digestAlgo]);
+                        digestOutputBase64String = Convert.ToBase64String(outputArray);
+                    }
+                    else if (transform.Attributes["Algorithm"].Value == "http://www.w3.org/2000/09/xmldsig#base64")
+                    {
+                        //digestOutputBase64String = Convert.FromBase64String(referencedDocument.OuterXml);
+                    }
+
+                    string digestValue = reference.SelectSingleNode("ds:DigestValue", xmlDoc.NameSpaceManager())?.InnerText;
+                    if (digestValue != digestOutputBase64String)
+                    {
+                        validationError.AppendErrorMessage("overenie referencií v elementoch ds:Manifest:dereferencovanie URI, aplikovanie príslušnej ds: Transforms transformácie(pri base64 decode), overenie hodnoty ds: DigestValue");
+                        return validationError;
+                    }
+                }
+                
             }
             return validationError;
         }
