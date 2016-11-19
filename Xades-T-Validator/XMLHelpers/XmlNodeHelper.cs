@@ -1,4 +1,6 @@
-﻿using Org.BouncyCastle.X509;
+﻿using Org.BouncyCastle.Cms;
+using Org.BouncyCastle.Tsp;
+using Org.BouncyCastle.X509;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,5 +25,19 @@ namespace Xades_T_Validator.XMLHelpers
 
             return bouncyCertificate;
         }
+
+        public static TimeStampToken GetToken(XMLDocumentWrapper docWrapper)
+        {
+            XmlDocument xmlDoc = docWrapper.XmlDoc;
+            var encapsulatedTimeStamp = xmlDoc.DocumentElement.SelectSingleNode("//xades:EncapsulatedTimeStamp", xmlDoc.NameSpaceManager());
+
+            var decodedTimeStamp = Convert.FromBase64String(encapsulatedTimeStamp.InnerText);
+            CmsSignedData cms = new CmsSignedData(decodedTimeStamp);
+            TimeStampToken token = new TimeStampToken(cms);
+
+            return token;
+        }
+
+
     }
 }
