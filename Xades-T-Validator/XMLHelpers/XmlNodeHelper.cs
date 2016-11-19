@@ -14,10 +14,13 @@ namespace Xades_T_Validator.XMLHelpers
 {
     public static class XmlNodeHelper
     {
-        public static X509Certificate GetCertificate(XMLDocumentWrapper docWrapper)
+        public static X509Certificate GetX509Certificate(XMLDocumentWrapper docWrapper)
         {
             XmlDocument xmlDoc = docWrapper.XmlDoc;
             var encodedCertificate = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate", xmlDoc.NameSpaceManager());
+
+            if (encodedCertificate == null)
+                return null;
 
             var parser = new X509CertificateParser();
             byte[] certificateBytes = Convert.FromBase64String(encodedCertificate.InnerText);

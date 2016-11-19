@@ -170,7 +170,7 @@ namespace Xades_T_Validator.ValidationHandlers
                 return validationError;
             }
 
-            X509Certificate certificate =  XmlNodeHelper.GetCertificate(docWrapper);
+            X509Certificate certificate =  XmlNodeHelper.GetX509Certificate(docWrapper);
 
             //check SubjectName
             if (x509Data.SelectSingleNode("ds:X509SubjectName", xmlDoc.NameSpaceManager()) == null)
