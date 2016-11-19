@@ -13,6 +13,7 @@ using Xades_T_Validator.XMLHelpers;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Asn1;
+using Xades_T_Validator.Enums;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -21,30 +22,9 @@ namespace Xades_T_Validator.ValidationHandlers
     {
         private const string xmlnsDs = "http://www.w3.org/2000/09/xmldsig#";
         private const string refType = "http://www.w3.org/2000/09/xmldsig#Object";
-        
-        private Dictionary<string, string> refElementsInfos;
-        private List<string> manifestTransformAlgorithms;
-        private List<string> digestMethodAlgorithms;
 
         public OtherElementsValidation(IEnumerable<XMLDocumentWrapper> documentWrappers) : base(documentWrappers)
         {
-            refElementsInfos = new Dictionary<string, string>();
-            refElementsInfos.Add("ds:KeyInfo", "http://www.w3.org/2000/09/xmldsig#Object");
-            refElementsInfos.Add("ds:SignatureProperties", "http://www.w3.org/2000/09/xmldsig#SignatureProperties");
-            refElementsInfos.Add("xades:SignedProperties", "http://uri.etsi.org/01903#SignedProperties");
-            refElementsInfos.Add("ds:Manifest", "http://www.w3.org/2000/09/xmldsig#Manifest");
-
-            manifestTransformAlgorithms = new List<string>();
-            manifestTransformAlgorithms.Add("http://www.w3.org/TR/2001/REC-xml-c14n-20010315");
-            manifestTransformAlgorithms.Add("http://www.w3.org/2000/09/xmldsig#base64");
-
-            digestMethodAlgorithms = new List<string>();
-            digestMethodAlgorithms.Add("http://www.w3.org/2000/09/xmldsig#sha1");
-            digestMethodAlgorithms.Add("http://www.w3.org/2001/04/xmldsig-more#sha224");
-            digestMethodAlgorithms.Add("http://www.w3.org/2001/04/xmlenc#sha256");
-            digestMethodAlgorithms.Add("http://www.w3.org/2001/04/xmldsig-more#sha384");
-            digestMethodAlgorithms.Add("http://www.w3.org/2001/04/xmlenc#sha512");
-
         }
 
         #region Signature-SignatureValue-SignedInfo
@@ -107,7 +87,7 @@ namespace Xades_T_Validator.ValidationHandlers
                     return validationError;
                 }
 
-                if (!refElementsInfos.Contains(new KeyValuePair<string, string>(targetElement.Name, refType)))
+                if (!ValidationEnums.ReferenceTypeConstraints.Mappings.Contains(new KeyValuePair<string, string>(targetElement.Name, refType)))
                 {
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                 }
@@ -263,7 +243,7 @@ namespace Xades_T_Validator.ValidationHandlers
                 XmlNodeList manifestTransforms = manifest.SelectNodes("ds:Reference/ds:Transforms/ds:Transform", xmlDoc.NameSpaceManager());
                 foreach (XmlNode transform in manifestTransforms)
                 {
-                    if (!manifestTransformAlgorithms.Contains(transform.Attributes["Algorithm"].Value))
+                    if (!ValidationEnums.ManifestTransformation.SupportedTransformations.Contains(transform.Attributes["Algorithm"].Value))
                     {
                         validationError.AppendErrorMessage("overenie ds:Manifest elementov: ds:Transforms musí byť z množiny podporovaných algoritmov pre daný element podľa profilu XAdES_ZEP,");
                     }
@@ -273,7 +253,7 @@ namespace Xades_T_Validator.ValidationHandlers
                 XmlNodeList manifestDigestMethods = manifest.SelectNodes("ds:Reference/ds:DigestMethod", xmlDoc.NameSpaceManager());
                 foreach (XmlNode digestMethod in manifestDigestMethods)
                 {
-                    if (!digestMethodAlgorithms.Contains(digestMethod.Attributes["Algorithm"].Value))
+                    if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestMethod.Attributes["Algorithm"].Value))
                     {
                         validationError.AppendErrorMessage("overenie ds:Manifest elementov: ds:DigestMethod – musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP");
                     }

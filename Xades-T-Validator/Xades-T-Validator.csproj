@@ -39,6 +39,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Attributes\XadesTValidationHandler.cs" />
     <Compile Include="Attributes\XadesTValidator.cs" />
+    <Compile Include="Enums\ValidationEnums.cs" />
     <Compile Include="Extensions\XmlDocumentExtensions.cs" />
     <Compile Include="ValidationExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

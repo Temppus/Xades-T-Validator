@@ -9,6 +9,7 @@ using Xades_T_Validator.Attributes;
 using Xades_T_Validator.ValidationHandlers.Base;
 using Xades_T_Validator.Wrappers;
 using Xades_T_Validator.Extensions;
+using Xades_T_Validator.Enums;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -27,7 +28,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
             var canonicalizationMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod", xmlDoc.NameSpaceManager());
 
-            if (canonicalizationMethod.Attributes["Algorithm"]?.Value != "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
+            if (canonicalizationMethod.Attributes["Algorithm"]?.Value != ValidationEnums.Canonicalization.CanonicalizationMethod)
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
 
             return validationError;
@@ -66,7 +67,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
             for (int i = 0; i < transforms.Count; i++)
             {
-                if (transforms[i].Attributes["Algorithm"]?.Value != "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
+                if (transforms[i].Attributes["Algorithm"]?.Value != ValidationEnums.Canonicalization.CanonicalizationMethod)
                 {
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                     break;
@@ -82,20 +83,11 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            List<string> digestMethodAlgorithms = new List<string>()
-            {
-                    "http://www.w3.org/2000/09/xmldsig#sha1",
-                    "http://www.w3.org/2001/04/xmldsig-more#sha224",
-                    "http://www.w3.org/2001/04/xmlenc#sha256",
-                    "http://www.w3.org/2001/04/xmldsig-more#sha384",
-                    "http://www.w3.org/2001/04/xmlenc#sha512"
-            };
-
             var digestMethods = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:DigestMethod", xmlDoc.NameSpaceManager());
 
             for (int i = 0; i < digestMethods.Count; i++)
             {
-                if (!digestMethodAlgorithms.Contains(digestMethods[i].Attributes["Algorithm"]?.Value))
+                if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestMethods[i].Attributes["Algorithm"]?.Value))
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
 
