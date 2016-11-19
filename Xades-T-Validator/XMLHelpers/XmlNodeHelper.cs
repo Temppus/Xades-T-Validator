@@ -29,12 +29,15 @@ namespace Xades_T_Validator.XMLHelpers
             return bouncyCertificate;
         }
 
-        public static TimeStampToken GetToken(XMLDocumentWrapper docWrapper)
+        public static TimeStampToken GetTimeStampToken(XMLDocumentWrapper docWrapper)
         {
             XmlDocument xmlDoc = docWrapper.XmlDoc;
-            var encapsulatedTimeStamp = xmlDoc.DocumentElement.SelectSingleNode("//xades:EncapsulatedTimeStamp", xmlDoc.NameSpaceManager());
+            var encapsulatedTimeStampEle = xmlDoc.DocumentElement.SelectSingleNode("//xades:EncapsulatedTimeStamp", xmlDoc.NameSpaceManager());
 
-            var decodedTimeStamp = Convert.FromBase64String(encapsulatedTimeStamp.InnerText);
+            if (encapsulatedTimeStampEle == null)
+                return null;
+
+            var decodedTimeStamp = Convert.FromBase64String(encapsulatedTimeStampEle.InnerText);
             CmsSignedData cms = new CmsSignedData(decodedTimeStamp);
             TimeStampToken token = new TimeStampToken(cms);
 
