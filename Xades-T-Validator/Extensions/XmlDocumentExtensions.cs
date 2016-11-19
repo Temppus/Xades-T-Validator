@@ -23,12 +23,23 @@ namespace Xades_T_Validator.Extensions
 
         public static XmlNode SelectXmlNode(this XmlDocument xmlDoc, string xPath)
         {
-            return xmlDoc.DocumentElement.SelectSingleNode(xPath, xmlDoc.NameSpaceManager());
+            return xmlDoc.SelectSingleNode(xPath, xmlDoc.NameSpaceManager());
         }
+
+        public static XmlNode SelectXmlNode(this XmlNode xmlNode, string xPath)
+        {
+            return xmlNode.SelectSingleNode(xPath, xmlNode.OwnerDocument.NameSpaceManager());
+        }
+
 
         public static XmlNodeList SelectXmlNodes(this XmlDocument xmlDoc, string xPath)
         {
-            return xmlDoc.DocumentElement.SelectNodes(xPath, xmlDoc.NameSpaceManager());
+            return xmlDoc.SelectNodes(xPath, xmlDoc.NameSpaceManager());
+        }
+
+        public static XmlNodeList SelectXmlNodes(this XmlNode xmlNode, string xPath)
+        {
+            return xmlNode.SelectNodes(xPath, xmlNode.OwnerDocument.NameSpaceManager());
         }
 
         public static string AtrValue(this XmlNode xmlNode, string atrName)

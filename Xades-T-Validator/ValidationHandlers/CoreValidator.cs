@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using Xades_T_Validator.Attributes;
 using Xades_T_Validator.ValidationHandlers.Base;
@@ -10,17 +7,10 @@ using Xades_T_Validator.Wrappers;
 using Xades_T_Validator.Extensions;
 using Xades_T_Validator.Enums;
 using System.Security.Cryptography.Xml;
-using System.Security.Cryptography.X509Certificates;
-using Org.BouncyCastle.X509;
-using Org.BouncyCastle.Crypto.Tls;
 using System.IO;
-using System.Security.Cryptography;
-using System.Xml.Serialization;
 using Xades_T_Validator.XMLHelpers;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Crypto.Parameters;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -37,24 +27,24 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var referencesNodes = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#Manifest']", xmlDoc.NameSpaceManager());
+            var referencesNodes = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#Manifest']");
 
             foreach (XmlNode refNode in referencesNodes)
             {
                 string uriTarget = refNode.Attributes["URI"]?.Value?.Substring(1);
 
-                var manifestNode = xmlDoc.DocumentElement.SelectSingleNode($"//ds:Manifest[@Id='{uriTarget}']", xmlDoc.NameSpaceManager());
+                var manifestNode = xmlDoc.SelectXmlNode($"//ds:Manifest[@Id='{uriTarget}']");
 
                 if (manifestNode == null)
                     validationError.AppendErrorMessage($"Couldnt find Manifest element with id : {uriTarget}.");
 
                 // Reference digest method
-                string digestAlgorithm = refNode.SelectSingleNode("//ds:DigestMethod", xmlDoc.NameSpaceManager())?.Attributes["Algorithm"]?.Value;
+                string digestAlgorithm = refNode.SelectXmlNode("//ds:DigestMethod")?.AtrValue("Algorithm");
 
                 if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestAlgorithm))
                     validationError.AppendErrorMessage($"Invalid digest method algorithm : {digestAlgorithm}");
 
-                var transformNodes = refNode.SelectNodes("ds:Transforms/ds:Transform", xmlDoc.NameSpaceManager());
+                var transformNodes = refNode.SelectXmlNodes("ds:Transforms/ds:Transform");
 
                 // Should be only one algorithm (Canonicalization - omit comments)
                 foreach (XmlNode transformNode in transformNodes)
@@ -77,7 +67,7 @@ namespace Xades_T_Validator.ValidationHandlers
                     string digestOutputBase64String = Convert.ToBase64String(outputArray);
 
                     // Retrieve expected digest
-                    string xmlDigestValueBase64String = refNode.SelectSingleNode("ds:DigestValue", xmlDoc.NameSpaceManager())?.InnerText;
+                    string xmlDigestValueBase64String = refNode.SelectXmlNode("ds:DigestValue")?.InnerText;
 
                     if (digestOutputBase64String != xmlDigestValueBase64String)
                     {
@@ -95,10 +85,10 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var signedInfoElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo", xmlDoc.NameSpaceManager());
-            var signatureMethodElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod", xmlDoc.NameSpaceManager());
-            var canonicalizationMethodElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod", xmlDoc.NameSpaceManager());
-            var signatureValueElement = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignatureValue", xmlDoc.NameSpaceManager());
+            var signedInfoElement = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo");
+            var signatureMethodElement = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod");
+            var canonicalizationMethodElement = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod");
+            var signatureValueElement = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignatureValue");
 
             if (signatureValueElement == null) return validationError.AppendErrorMessage(nameof(signatureValueElement) + " missing");
             if (signatureMethodElement == null) return validationError.AppendErrorMessage(nameof(signatureMethodElement) + " missing");

@@ -17,7 +17,7 @@ namespace Xades_T_Validator.XMLHelpers
         public static X509Certificate GetX509Certificate(XMLDocumentWrapper docWrapper)
         {
             XmlDocument xmlDoc = docWrapper.XmlDoc;
-            var encodedCertificate = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate", xmlDoc.NameSpaceManager());
+            var encodedCertificate = xmlDoc.SelectXmlNode("//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate");
 
             if (encodedCertificate == null)
                 return null;
@@ -32,7 +32,7 @@ namespace Xades_T_Validator.XMLHelpers
         public static TimeStampToken GetTimeStampToken(XMLDocumentWrapper docWrapper)
         {
             XmlDocument xmlDoc = docWrapper.XmlDoc;
-            var encapsulatedTimeStampEle = xmlDoc.DocumentElement.SelectSingleNode("//xades:EncapsulatedTimeStamp", xmlDoc.NameSpaceManager());
+            var encapsulatedTimeStampEle = xmlDoc.SelectXmlNode("//xades:EncapsulatedTimeStamp");
 
             if (encapsulatedTimeStampEle == null)
                 return null;

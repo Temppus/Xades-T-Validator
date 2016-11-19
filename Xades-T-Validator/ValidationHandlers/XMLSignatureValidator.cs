@@ -26,7 +26,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var canonicalizationMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod", xmlDoc.NameSpaceManager());
+            var canonicalizationMethod = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod");
 
             if (canonicalizationMethod.Attributes["Algorithm"]?.Value != ValidationEnums.Canonicalization.CanonicalizationMethod)
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -40,7 +40,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var signatureMethod = xmlDoc.DocumentElement.SelectSingleNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod", xmlDoc.NameSpaceManager());
+            var signatureMethod = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod");
 
             if (!ValidationEnums.Cryptography.SupportedSignatureSchemasMappings.ContainsKey(signatureMethod.Attributes["Algorithm"]?.Value))
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -54,7 +54,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var transforms = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:Transforms/ds:Transform", xmlDoc.NameSpaceManager());
+            var transforms = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:Transforms/ds:Transform");
 
             for (int i = 0; i < transforms.Count; i++)
             {
@@ -74,7 +74,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var digestMethods = xmlDoc.DocumentElement.SelectNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:DigestMethod", xmlDoc.NameSpaceManager());
+            var digestMethods = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:DigestMethod");
 
             for (int i = 0; i < digestMethods.Count; i++)
             {
