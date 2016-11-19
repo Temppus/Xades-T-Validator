@@ -46,5 +46,10 @@ namespace Xades_T_Validator.Extensions
         {
             return xmlNode.Attributes[atrName]?.Value;
         }
+
+        public static bool AtrExists(this XmlNode xmlNode, string atrName)
+        {
+            return xmlNode.Attributes[atrName] != null;
+        }
     }
 }

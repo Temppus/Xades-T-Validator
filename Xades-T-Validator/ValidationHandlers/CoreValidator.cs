@@ -31,7 +31,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
             foreach (XmlNode refNode in referencesNodes)
             {
-                string uriTarget = refNode.Attributes["URI"]?.Value?.Substring(1);
+                string uriTarget = refNode.AtrValue("URI")?.Substring(1);
 
                 var manifestNode = xmlDoc.SelectXmlNode($"//ds:Manifest[@Id='{uriTarget}']");
 
@@ -49,7 +49,7 @@ namespace Xades_T_Validator.ValidationHandlers
                 // Should be only one algorithm (Canonicalization - omit comments)
                 foreach (XmlNode transformNode in transformNodes)
                 {
-                    string transformAlgorithm = transformNode.Attributes["Algorithm"]?.Value;
+                    string transformAlgorithm = transformNode.AtrValue("Algorithm");
 
                     if (transformAlgorithm != ValidationEnums.Canonicalization.CanonicalizationMethod)
                     {
@@ -100,7 +100,7 @@ namespace Xades_T_Validator.ValidationHandlers
             if (certificate == null)
                 return validationError.AppendErrorMessage("X509Certificate element is missing");
 
-            var canMethod = canonicalizationMethodElement.Attributes["Algorithm"]?.Value;
+            var canMethod = canonicalizationMethodElement.AtrValue("Algorithm");
 
             if (canMethod != ValidationEnums.Canonicalization.CanonicalizationMethod)
                 return validationError.AppendErrorMessage($"Not supported cannonicalization method. {canMethod}");
@@ -115,7 +115,7 @@ namespace Xades_T_Validator.ValidationHandlers
             MemoryStream s = (MemoryStream)c14n.GetOutput();
             var digestBytes = s.ToArray();
 
-            string singnatureAlgorithm = signatureMethodElement.Attributes["Algorithm"]?.Value;
+            string singnatureAlgorithm = signatureMethodElement.AtrValue("Algorithm");
 
             if (!ValidationEnums.Cryptography.SupportedSignatureSchemasMappings.ContainsKey(singnatureAlgorithm))
                 return validationError.AppendErrorMessage($"Not supported signing algorithm {singnatureAlgorithm}");

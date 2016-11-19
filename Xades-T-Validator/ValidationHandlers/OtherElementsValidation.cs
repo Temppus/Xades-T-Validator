@@ -35,11 +35,11 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            if (xmlDoc.SelectXmlNode("//ds:Signature").Attributes["Id"] == null)
+            if (!xmlDoc.SelectXmlNode("//ds:Signature").AtrExists("Id"))
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
-            if (xmlDoc.SelectXmlNode("//ds:Signature").Attributes["xmlns:ds"].Value != xmlnsDs)
+            if (xmlDoc.SelectXmlNode("//ds:Signature").AtrValue("xmlns:ds") != xmlnsDs)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
@@ -53,7 +53,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            if (xmlDoc.SelectXmlNode("//ds:Signature/ds:SignatureValue").Attributes["Id"] == null)
+            if (!xmlDoc.SelectXmlNode("//ds:Signature/ds:SignatureValue").AtrExists("Id"))
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
@@ -77,8 +77,8 @@ namespace Xades_T_Validator.ValidationHandlers
 
             foreach (XmlElement xmlRef in references)
             {
-                string refType = xmlRef.Attributes["Type"]?.Value;
-                string targetId = xmlRef.Attributes["URI"]?.Value?.Substring(1);
+                string refType = xmlRef.AtrValue("Type");
+                string targetId = xmlRef.AtrValue("URI")?.Substring(1);
                 var targetElement = xmlDoc.SelectXmlNode("//ds:Signature//*[@Id='" + targetId + "']");
 
                 if (refType == null || targetId == null || targetElement == null)
@@ -120,7 +120,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            if (xmlDoc.SelectXmlNode("//ds:Signature/ds:Object/ds:SignatureProperties").Attributes["Id"] == null)
+            if (!xmlDoc.SelectXmlNode("//ds:Signature/ds:Object/ds:SignatureProperties").AtrExists("Id"))
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
@@ -132,8 +132,8 @@ namespace Xades_T_Validator.ValidationHandlers
                 return validationError;
             }
 
-            string signatureId = xmlDoc.SelectXmlNode("//ds:Signature")?.Attributes["Id"]?.Value;
-            if (signatureVersion.ParentNode.Attributes["Target"].Value.Substring(1) != signatureId || productInfos.ParentNode.Attributes["Target"].Value.Substring(1) != signatureId)
+            string signatureId = xmlDoc.SelectXmlNode("//ds:Signature")?.AtrValue("Id");
+            if (signatureVersion.ParentNode.AtrValue("Target").Substring(1) != signatureId || productInfos.ParentNode.AtrValue("Target").Substring(1) != signatureId)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
@@ -149,7 +149,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var keyInfoID = xmlDoc.SelectXmlNode("//ds:Signature/ds:KeyInfo")?.Attributes["Id"]?.Value;
+            var keyInfoID = xmlDoc.SelectXmlNode("//ds:Signature/ds:KeyInfo")?.AtrValue("Id");
 
             if(keyInfoID == null)
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -234,7 +234,7 @@ namespace Xades_T_Validator.ValidationHandlers
                 }
 
                 //Id validation
-                if (manifest.Attributes["Id"] == null)
+                if (!manifest.AtrExists("Id"))
                 {
                     validationError.AppendErrorMessage("overenie ds:Manifest elementov: každý ds:Manifest element musí mať Id atribút");
                 }
@@ -243,7 +243,7 @@ namespace Xades_T_Validator.ValidationHandlers
                 XmlNodeList manifestTransforms = manifest.SelectXmlNodes("ds:Reference/ds:Transforms/ds:Transform");
                 foreach (XmlNode transform in manifestTransforms)
                 {
-                    if (!ValidationEnums.ManifestTransformation.SupportedTransformations.Contains(transform.Attributes["Algorithm"].Value))
+                    if (!ValidationEnums.ManifestTransformation.SupportedTransformations.Contains(transform.AtrValue("Algorithm")))
                     {
                         validationError.AppendErrorMessage("overenie ds:Manifest elementov: ds:Transforms musí byť z množiny podporovaných algoritmov pre daný element podľa profilu XAdES_ZEP,");
                     }
@@ -253,7 +253,7 @@ namespace Xades_T_Validator.ValidationHandlers
                 XmlNodeList manifestDigestMethods = manifest.SelectXmlNodes("ds:Reference/ds:DigestMethod");
                 foreach (XmlNode digestMethod in manifestDigestMethods)
                 {
-                    if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestMethod.Attributes["Algorithm"].Value))
+                    if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestMethod.AtrValue("Algorithm")))
                     {
                         validationError.AppendErrorMessage("overenie ds:Manifest elementov: ds:DigestMethod – musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP");
                     }
@@ -261,7 +261,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
                 //Manifest/reference - Type validation
                 XmlNode manifestReference = manifest.SelectXmlNode("ds:Reference");
-                if(manifestReference.Attributes["Type"]?.Value != refType)
+                if(manifestReference.AtrValue("Type") != refType)
                 {
                     validationError.AppendErrorMessage("overenie ds:Manifest elementov: overenie hodnoty Type atribútu voči profilu XAdES_ZEP");
                 }

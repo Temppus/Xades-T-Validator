@@ -28,7 +28,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
             var canonicalizationMethod = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod");
 
-            if (canonicalizationMethod.Attributes["Algorithm"]?.Value != ValidationEnums.Canonicalization.CanonicalizationMethod)
+            if (canonicalizationMethod.AtrValue("Algorithm") != ValidationEnums.Canonicalization.CanonicalizationMethod)
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
 
             return validationError;
@@ -42,7 +42,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
             var signatureMethod = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod");
 
-            if (!ValidationEnums.Cryptography.SupportedSignatureSchemasMappings.ContainsKey(signatureMethod.Attributes["Algorithm"]?.Value))
+            if (!ValidationEnums.Cryptography.SupportedSignatureSchemasMappings.ContainsKey(signatureMethod.AtrValue("Algorithm")))
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
 
             return validationError;
@@ -58,7 +58,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
             for (int i = 0; i < transforms.Count; i++)
             {
-                if (transforms[i].Attributes["Algorithm"]?.Value != ValidationEnums.Canonicalization.CanonicalizationMethod)
+                if (transforms[i].AtrValue("Algorithm") != ValidationEnums.Canonicalization.CanonicalizationMethod)
                 {
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                     break;
@@ -78,7 +78,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
             for (int i = 0; i < digestMethods.Count; i++)
             {
-                if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestMethods[i].Attributes["Algorithm"]?.Value))
+                if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestMethods[i].AtrValue("Algorithm")))
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
 
