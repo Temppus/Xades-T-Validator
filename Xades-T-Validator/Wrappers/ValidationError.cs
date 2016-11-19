@@ -22,12 +22,12 @@ namespace Xades_T_Validator.Wrappers
             return FileName + " -> - " + ErrorMessage;
         }
 
-        public void AppendErrorMessage(string message)
+        public ValidationError AppendErrorMessage(string message)
         {
             if (ErrorMessage == null)
             {
                 ErrorMessage = message;
-                return;
+                return this;
             }
 
             StringBuilder sb = new StringBuilder("\n\t");
@@ -39,6 +39,8 @@ namespace Xades_T_Validator.Wrappers
             sb.Append(message);
 
             ErrorMessage += sb.ToString();
+
+            return this;
         }
     }
 }
