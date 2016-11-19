@@ -20,5 +20,15 @@ namespace Xades_T_Validator.Extensions
 
             return namespaces;
         }
+
+        public static XmlNode SelectXmlNode(this XmlDocument xmlDoc, string xPath)
+        {
+            return xmlDoc.DocumentElement.SelectSingleNode(xPath, xmlDoc.NameSpaceManager());
+        }
+
+        public static XmlNodeList SelectXmlNodes(this XmlDocument xmlDoc, string xPath)
+        {
+            return xmlDoc.DocumentElement.SelectNodes(xPath, xmlDoc.NameSpaceManager());
+        }
     }
 }
