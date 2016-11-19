@@ -8,10 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Xades_T_Validator.Attributes;
+using Xades_T_Validator.Helpers;
 using Xades_T_Validator.ValidationHandlers.Base;
 using Xades_T_Validator.Wrappers;
 using Xades_T_Validator.XMLHelpers;
-//using System.Security.Cryptography.X509Certificates;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -35,7 +35,7 @@ namespace Xades_T_Validator.ValidationHandlers
             if (token == null)
                 return validationError.AppendErrorMessage("Nepodarilo sa nájsť token");
 
-            //Check certificate validity against timestamp token time
+            // Check certificate validity against timestamp token time
             try
             {
                 certificate.CheckValidity(token.TimeStampInfo.GenTime);
@@ -44,18 +44,9 @@ namespace Xades_T_Validator.ValidationHandlers
             {
                 return validationError.AppendErrorMessage("Platnosť podpisového certifikátu neodpovedá času z časovej pečiatky. ErrorMessage ->" + ex.Message);
             }
-            
-            //Check certificate validity against crl
-            byte[] crlByteArray;
 
-            using (WebClient webClient = new WebClient())
-            {
-                crlByteArray = webClient.DownloadData(new Uri("http://test.monex.sk/DTCCACrl/DTCCACrl.crl"));
-            }
-
-            X509CrlParser parser = new X509CrlParser();
-            X509Crl crl = parser.ReadCrl(crlByteArray);
-            X509CrlEntry entry = crl.GetRevokedCertificate(certificate.SerialNumber);
+            // Check certificate validity against crl
+            X509CrlEntry entry = CrlHelper.GetRevokedCertificateEntry(certificate.SerialNumber);
 
             if (entry == null)
                 return validationError;

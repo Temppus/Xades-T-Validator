@@ -52,6 +52,7 @@
     <Compile Include="Attributes\XadesTValidator.cs" />
     <Compile Include="Enums\ValidationEnums.cs" />
     <Compile Include="Extensions\XmlDocumentExtensions.cs" />
+    <Compile Include="Helpers\CrlHelper.cs" />
     <Compile Include="ValidationExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ValidationHandlers\Base\BaseXadesTValidator.cs" />
@@ -64,8 +65,8 @@
     <Compile Include="ValidationHandlers\XMLSignatureValidator.cs" />
     <Compile Include="Wrappers\ValidationError.cs" />
     <Compile Include="Wrappers\XMLDocumentWrapper.cs" />
-    <Compile Include="XMLHelpers\XmlLoaderHelper.cs" />
-    <Compile Include="XMLHelpers\XmlNodeHelper.cs" />
+    <Compile Include="Helpers\XmlLoaderHelper.cs" />
+    <Compile Include="Helpers\XmlNodeHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
