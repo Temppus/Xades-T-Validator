@@ -16,6 +16,7 @@ using Org.BouncyCastle.Asn1;
 using Xades_T_Validator.Enums;
 using System.IO;
 using System.Security.Cryptography.Xml;
+using Xades_T_Validator.Helpers;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -282,53 +283,47 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            XmlNodeList manifestReference = xmlDoc.DocumentElement.SelectXmlNodes("//ds:Signature/ds:Object/ds:Manifest/ds:Reference");
-            foreach (XmlNode reference in manifestReference)
+            XmlNodeList manifestReferences = xmlDoc.SelectXmlNodes("//ds:Signature/ds:Object/ds:Manifest/ds:Reference");
+            foreach (XmlNode manifestRef in manifestReferences)
             {
-                //dereferencing
-                XmlNode referencedObject = xmlDoc.DocumentElement.SelectXmlNode("//ds:Object[@Id='" + reference.AtrValue("URI").Substring(1) + "']");
+                var refURI = manifestRef.AtrValue("URI")?.Substring(1);
+                XmlNode referencedObject = xmlDoc.SelectXmlNode($"ds:Object[@Id='{refURI}']");
+
                 if (referencedObject == null)
-                {
-                    validationError.AppendErrorMessage("referenced object does not exist");
-                    return validationError;
-                }
+                    return validationError.AppendErrorMessage("Referenced object does not exist");
 
-                //getting single xml element
-                XmlDocument referencedDocument = new XmlDocument();
-                referencedDocument.PreserveWhitespace = true;
-                referencedDocument.LoadXml(referencedObject.OuterXml);
+                byte[] referencedElementByte = CanonicalizationHelper.CanonicalizeXml(referencedObject);
 
-                
-                //getting byte array of that element
-                MemoryStream xmlStream = new MemoryStream();
-                referencedDocument.Save(xmlStream);
-                byte[] referencedElementByte = xmlStream.ToArray();
-                
+                XmlNodeList transforms = manifestRef.SelectXmlNodes("ds:Transforms/ds:Transform");
+                string digestAlgo = manifestRef.SelectXmlNode("ds:DigestMethod")?.AtrValue("Algorithm");
+                string digestOutputBase64String = null;
 
-                //applying transformations
-                XmlNodeList transforms = reference.SelectXmlNodes("ds:Transforms/ds:Transform");
-                string digestAlgo = reference.SelectXmlNode("ds:DigestMethod").AtrValue("Algorithm");
-                string digestOutputBase64String = string.Empty;
-                foreach (XmlNode transform in transforms)
-                {                     
-                    if (transform.AtrValue("Algorithm") == "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
+                foreach (XmlNode transformEle in transforms)
+                {            
+                    string transformAlgo = transformEle.AtrValue("Algorithm");
+
+                    if (transformAlgo == ValidationEnums.Canonicalization.CanonicalizationMethod)
                     {
-                        XmlDsigC14NTransform c14n = new XmlDsigC14NTransform(false);
-                        c14n.LoadInput(referencedDocument);
-                        var outputArray = c14n.GetDigestedOutput(ValidationEnums.HashAlgorithms.SHAMappings[digestAlgo]);
-                        //var outputArray = ((MemoryStream)c14n.GetOutput()).ToArray();
+                        var hashAlgo = ValidationEnums.HashAlgorithms.SHAMappings[digestAlgo];
+                        var outputArray = CanonicalizationHelper.CanonicalizeXmlDigest(referencedObject, hashAlgo);
                         digestOutputBase64String = Convert.ToBase64String(outputArray);
                     }
-                    else if (transform.AtrValue("Algorithm") == "http://www.w3.org/2000/09/xmldsig#base64")
+                    else if (transformAlgo == "http://www.w3.org/2000/09/xmldsig#base64")
                     {
                         digestOutputBase64String = Encoding.UTF8.GetString(Convert.FromBase64String(Encoding.UTF8.GetString(referencedElementByte)));
-                    } 
-                }
-                string digestValue = reference.SelectXmlNode("ds:DigestValue")?.InnerText;
-                if (digestValue != digestOutputBase64String)
-                {
-                    validationError.AppendErrorMessage("overenie referencií v elementoch ds:Manifest:dereferencovanie URI, aplikovanie príslušnej ds: Transforms transformácie(pri base64 decode), overenie hodnoty ds: DigestValue");
-                    return validationError;
+                    }
+                    else
+                    {
+                        return validationError.AppendErrorMessage($"Not supported transform algorithm :  {transformAlgo}");
+                    }
+
+                    string digestValue = manifestRef.SelectXmlNode("ds:DigestValue")?.InnerText;
+
+                    if (digestValue != digestOutputBase64String)
+                    {
+                        validationError.AppendErrorMessage($"Digest values do not match. {digestValue}  <-> {digestOutputBase64String}");
+                        return validationError;
+                    }
                 }
             }
             return validationError;

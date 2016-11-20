@@ -11,6 +11,7 @@ using System.IO;
 using Xades_T_Validator.XMLHelpers;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Security;
+using Xades_T_Validator.Helpers;
 
 namespace Xades_T_Validator.ValidationHandlers
 {
@@ -27,7 +28,7 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            var referencesNodes = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#Manifest']");
+            var referencesNodes = xmlDoc.SelectXmlNodes($"//ds:Signature/ds:SignedInfo/ds:Reference[@Type='{ValidationEnums.ReferenceTypeConstraints.Mappings["ds:Manifest"]}']");
 
             foreach (XmlNode refNode in referencesNodes)
             {
@@ -57,13 +58,7 @@ namespace Xades_T_Validator.ValidationHandlers
                         break;
                     }
 
-                    XmlDocument manifestDoc = new XmlDocument();
-                    manifestDoc.PreserveWhitespace = true;
-                    manifestDoc.LoadXml(manifestNode.OuterXml);
-
-                    XmlDsigC14NTransform c14n = new XmlDsigC14NTransform(false);
-                    c14n.LoadInput(manifestDoc);
-                    var outputArray = c14n.GetDigestedOutput(ValidationEnums.HashAlgorithms.SHAMappings[digestAlgorithm]);
+                    var outputArray = CanonicalizationHelper.CanonicalizeXmlDigest(manifestNode, ValidationEnums.HashAlgorithms.SHAMappings[digestAlgorithm]);
                     string digestOutputBase64String = Convert.ToBase64String(outputArray);
 
                     // Retrieve expected digest
@@ -105,15 +100,7 @@ namespace Xades_T_Validator.ValidationHandlers
             if (canMethod != ValidationEnums.Canonicalization.CanonicalizationMethod)
                 return validationError.AppendErrorMessage($"Not supported cannonicalization method. {canMethod}");
 
-            XmlDocument signedInfoDoc = new XmlDocument();
-            xmlDoc.PreserveWhitespace = true;
-            signedInfoDoc.LoadXml(signedInfoElement.OuterXml);
-
-            XmlDsigC14NTransform c14n = new XmlDsigC14NTransform(false);
-            c14n.LoadInput(signedInfoDoc);
-
-            MemoryStream s = (MemoryStream)c14n.GetOutput();
-            var digestBytes = s.ToArray();
+            var digestBytes = CanonicalizationHelper.CanonicalizeXml(signedInfoElement);
 
             string singnatureAlgorithm = signatureMethodElement.AtrValue("Algorithm");
 

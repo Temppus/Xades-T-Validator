@@ -52,6 +52,7 @@
     <Compile Include="Attributes\XadesTValidator.cs" />
     <Compile Include="Enums\ValidationEnums.cs" />
     <Compile Include="Extensions\XmlDocumentExtensions.cs" />
+    <Compile Include="Helpers\CanonicalizationHelper.cs" />
     <Compile Include="Helpers\CrlHelper.cs" />
     <Compile Include="ValidationExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

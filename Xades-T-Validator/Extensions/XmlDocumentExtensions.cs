@@ -22,13 +22,6 @@ namespace Xades_T_Validator.Extensions
             return namespaces;
         }
 
-        public static byte [] ToByteArray(this XmlDocument xmlDoc)
-        {
-            MemoryStream xmlStream = new MemoryStream();
-            xmlDoc.Save(xmlStream);
-            return xmlStream.ToArray();
-        }
-
         public static XmlNode SelectXmlNode(this XmlDocument xmlDoc, string xPath)
         {
             return xmlDoc.DocumentElement.SelectSingleNode(xPath, xmlDoc.NameSpaceManager());
