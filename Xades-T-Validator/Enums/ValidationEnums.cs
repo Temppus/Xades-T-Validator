@@ -62,7 +62,7 @@ namespace Xades_T_Validator.Enums
         public class Cryptography
         {
             /// <summary>
-            /// Dictionary of XAdES_ZEP supported cryptography algorihtms for signature
+            /// Mappings of algortithm URI to algorithm name for XAdES_ZEP supported cryptography algorihtms of Signature
             /// </summary>
             public static readonly Dictionary<string, string> SupportedSignatureSchemasMappings = new Dictionary<string, string>
             {
