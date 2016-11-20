@@ -282,11 +282,11 @@ namespace Xades_T_Validator.ValidationHandlers
             ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
             XmlDocument xmlDoc = docWrapper.XmlDoc;
 
-            XmlNodeList manifestReference = xmlDoc.DocumentElement.SelectNodes("ds:Signature/ds:Object/ds:Manifest/ds:Reference", xmlDoc.NameSpaceManager());
+            XmlNodeList manifestReference = xmlDoc.DocumentElement.SelectXmlNodes("//ds:Signature/ds:Object/ds:Manifest/ds:Reference");
             foreach (XmlNode reference in manifestReference)
             {
                 //dereferencing
-                XmlNode referencedObject = xmlDoc.DocumentElement.SelectSingleNode("ds:Object[@Id='" + reference.Attributes["URI"].Value.Substring(1) + "']", xmlDoc.NameSpaceManager());
+                XmlNode referencedObject = xmlDoc.DocumentElement.SelectXmlNode("//ds:Object[@Id='" + reference.AtrValue("URI").Substring(1) + "']");
                 if (referencedObject == null)
                 {
                     validationError.AppendErrorMessage("referenced object does not exist");
@@ -298,39 +298,38 @@ namespace Xades_T_Validator.ValidationHandlers
                 referencedDocument.PreserveWhitespace = true;
                 referencedDocument.LoadXml(referencedObject.OuterXml);
 
-                /*
+                
                 //getting byte array of that element
                 MemoryStream xmlStream = new MemoryStream();
                 referencedDocument.Save(xmlStream);
                 byte[] referencedElementByte = xmlStream.ToArray();
-                */
+                
 
                 //applying transformations
-                XmlNodeList transforms = reference.SelectNodes("ds:Transforms/ds:Transform", xmlDoc.NameSpaceManager());
-                string digestAlgo = reference.SelectSingleNode("ds:DigestMethod", xmlDoc.NameSpaceManager()).Attributes["Algorithm"].Value;
+                XmlNodeList transforms = reference.SelectXmlNodes("ds:Transforms/ds:Transform");
+                string digestAlgo = reference.SelectXmlNode("ds:DigestMethod").AtrValue("Algorithm");
+                string digestOutputBase64String = string.Empty;
                 foreach (XmlNode transform in transforms)
-                {
-                    string digestOutputBase64String = string.Empty;
-                    if (transform.Attributes["Algorithm"].Value == "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
+                {                     
+                    if (transform.AtrValue("Algorithm") == "http://www.w3.org/TR/2001/REC-xml-c14n-20010315")
                     {
                         XmlDsigC14NTransform c14n = new XmlDsigC14NTransform(false);
                         c14n.LoadInput(referencedDocument);
                         var outputArray = c14n.GetDigestedOutput(ValidationEnums.HashAlgorithms.SHAMappings[digestAlgo]);
+                        //var outputArray = ((MemoryStream)c14n.GetOutput()).ToArray();
                         digestOutputBase64String = Convert.ToBase64String(outputArray);
                     }
-                    else if (transform.Attributes["Algorithm"].Value == "http://www.w3.org/2000/09/xmldsig#base64")
+                    else if (transform.AtrValue("Algorithm") == "http://www.w3.org/2000/09/xmldsig#base64")
                     {
-                        //digestOutputBase64String = Convert.FromBase64String(referencedDocument.OuterXml);
-                    }
-
-                    string digestValue = reference.SelectSingleNode("ds:DigestValue", xmlDoc.NameSpaceManager())?.InnerText;
-                    if (digestValue != digestOutputBase64String)
-                    {
-                        validationError.AppendErrorMessage("overenie referencií v elementoch ds:Manifest:dereferencovanie URI, aplikovanie príslušnej ds: Transforms transformácie(pri base64 decode), overenie hodnoty ds: DigestValue");
-                        return validationError;
-                    }
+                        digestOutputBase64String = Encoding.UTF8.GetString(Convert.FromBase64String(Encoding.UTF8.GetString(referencedElementByte)));
+                    } 
                 }
-                
+                string digestValue = reference.SelectXmlNode("ds:DigestValue")?.InnerText;
+                if (digestValue != digestOutputBase64String)
+                {
+                    validationError.AppendErrorMessage("overenie referencií v elementoch ds:Manifest:dereferencovanie URI, aplikovanie príslušnej ds: Transforms transformácie(pri base64 decode), overenie hodnoty ds: DigestValue");
+                    return validationError;
+                }
             }
             return validationError;
         }
