@@ -21,11 +21,10 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 1, Description: "CanonicalizationMethod musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP")]
-        public ValidationError ValidationHandler1(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidationHandler1(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             var canonicalizationMethod = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo/ds:CanonicalizationMethod");
 
             if (canonicalizationMethod.AtrValue("Algorithm") != ValidationEnums.Canonicalization.CanonicalizationMethod)
@@ -35,11 +34,10 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 2, Description: "SignatureMethod musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP")]
-        public ValidationError ValidationHandler2(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidationHandler2(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             var signatureMethod = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod");
 
             if (!ValidationEnums.Cryptography.SupportedSignatureSchemasMappings.ContainsKey(signatureMethod.AtrValue("Algorithm")))
@@ -49,11 +47,10 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 3, Description: "Transform musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP")]
-        public ValidationError ValidationHandler3(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidationHandler3(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             var transforms = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:Transforms/ds:Transform");
 
             for (int i = 0; i < transforms.Count; i++)
@@ -69,11 +66,10 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 4, Description: "DigestMethod musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP")]
-        public ValidationError ValidationHandler4(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidationHandler4(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             var digestMethods = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:DigestMethod");
 
             for (int i = 0; i < digestMethods.Count; i++)

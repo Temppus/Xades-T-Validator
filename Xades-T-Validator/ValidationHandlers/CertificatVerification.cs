@@ -23,11 +23,11 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 1, Description: "Overenie platnosti podpisového certifikátu")]
-        public ValidationError ValidationHandler1(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidationHandler1(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            TimeStampToken token = XmlNodeHelper.GetTimeStampToken(docWrapper);
-            Org.BouncyCastle.X509.X509Certificate certificate = XmlNodeHelper.GetX509Certificate(docWrapper);
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            TimeStampToken token = XmlNodeHelper.GetTimeStampToken(xmlDoc);
+            Org.BouncyCastle.X509.X509Certificate certificate = XmlNodeHelper.GetX509Certificate(xmlDoc);
 
             if (certificate == null)
                 return validationError.AppendErrorMessage("Nepodarilo sa nájsť certifikát");

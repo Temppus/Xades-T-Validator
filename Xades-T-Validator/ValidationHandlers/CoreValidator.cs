@@ -23,10 +23,9 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 1, Description: "Overenie hodnôt odtlačkov ds:DigestValue")]
-        public ValidationError DigestValueVerificationHandler(XMLDocumentWrapper docWrapper)
+        public ValidationError DigestValueVerificationHandler(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
+            ValidationError validationError = new ValidationError(xmlFileName, null);
 
             var referencesNodes = xmlDoc.SelectXmlNodes($"//ds:Signature/ds:SignedInfo/ds:Reference[@Type='{ValidationEnums.ReferenceTypeConstraints.Mappings["ds:Manifest"]}']");
 
@@ -75,10 +74,9 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 2, Description: "Overenie hodnoty ds:SignatureValue pomocou pripojeného podpisového certifikátu v ds:KeyInfo")]
-        public ValidationError SignatureValueVerificationHandler(XMLDocumentWrapper docWrapper)
+        public ValidationError SignatureValueVerificationHandler(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
+            ValidationError validationError = new ValidationError(xmlFileName, null);
 
             var signedInfoElement = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo");
             var signatureMethodElement = xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo/ds:SignatureMethod");
@@ -90,7 +88,7 @@ namespace Xades_T_Validator.ValidationHandlers
             if (canonicalizationMethodElement == null) return validationError.AppendErrorMessage(nameof(canonicalizationMethodElement) + " missing");
             if (signedInfoElement == null) return validationError.AppendErrorMessage(nameof(signedInfoElement) + " missing");
 
-            var certificate = XmlNodeHelper.GetX509Certificate(docWrapper);
+            var certificate = XmlNodeHelper.GetX509Certificate(xmlDoc);
 
             if (certificate == null)
                 return validationError.AppendErrorMessage("X509Certificate element is missing");

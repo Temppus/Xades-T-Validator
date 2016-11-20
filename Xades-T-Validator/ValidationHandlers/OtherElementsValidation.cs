@@ -33,11 +33,10 @@ namespace Xades_T_Validator.ValidationHandlers
         #region Signature-SignatureValue-SignedInfo
 
         [XadesTValidationHandler(ExecutionOrder: 1, Description: "ds:Signature: musí mať Id atribút, musí mať špecifikovaný namespace xmlns:ds")]
-        public ValidationError ValidateSignature(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidateSignature(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             if (!xmlDoc.SelectXmlNode("//ds:Signature").AtrExists("Id"))
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -51,11 +50,10 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 2, Description: "ds:SignatureValue – musí mať Id atribút")]
-        public ValidationError ValidateSignatureValue(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidateSignatureValue(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             if (!xmlDoc.SelectXmlNode("//ds:Signature/ds:SignatureValue").AtrExists("Id"))
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -71,11 +69,10 @@ namespace Xades_T_Validator.ValidationHandlers
                             "ds: SignatureProperties element, " + 
                             "xades: SignedProperties element, " + 
                             "všetky ostatné referencie v rámci ds: SignedInfo musia byť referenciami na ds: Manifest elementy")]
-        public ValidationError ValidateReferences(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidateReferences(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             XmlNodeList references = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference");
 
             foreach (XmlElement xmlRef in references)
@@ -118,11 +115,10 @@ namespace Xades_T_Validator.ValidationHandlers
                             "musí mať Id atribút," + 
                             "musí obsahovať dva elementy ds: SignatureProperty pre xzep: SignatureVersion a xzep: ProductInfos," + 
                             "obidva ds: SignatureProperty musia mať atribút Target nastavený na ds: Signature, -oba kontrola cez mriežku  #signatureid")]
-        public ValidationError ValidateSignatureProperties(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidateSignatureProperties(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             if (!xmlDoc.SelectXmlNode("//ds:Signature/ds:Object/ds:SignatureProperties").AtrExists("Id"))
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -147,11 +143,10 @@ namespace Xades_T_Validator.ValidationHandlers
 
         #region KeyInfoValidation
         [XadesTValidationHandler(ExecutionOrder: 4, Description: "KeyInfo musí mať ID atribút")]
-        public ValidationError ValidationHandler1(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidationHandler1(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             var keyInfoID = xmlDoc.SelectXmlNode("//ds:Signature/ds:KeyInfo")?.AtrValue("Id");
 
             if(keyInfoID == null)
@@ -173,7 +168,7 @@ namespace Xades_T_Validator.ValidationHandlers
                 return validationError;
             }
 
-            X509Certificate certificate =  XmlNodeHelper.GetX509Certificate(docWrapper);
+            X509Certificate certificate =  XmlNodeHelper.GetX509Certificate(xmlDoc);
 
             //check SubjectName
             if (x509Data.SelectXmlNode("ds:X509SubjectName") == null)
@@ -221,11 +216,10 @@ namespace Xades_T_Validator.ValidationHandlers
                             "ds:DigestMethod – musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP," + 
                             "overenie hodnoty Type atribútu voči profilu XAdES_ZEP," + 
                             "každý ds:Manifest element musí obsahovať práve jednu referenciu na ds: Object")]
-        public ValidationError ValidateManifestElement(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidateManifestElement(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             XmlNodeList manifests = xmlDoc.SelectXmlNodes("//ds:Signature/ds:Object/ds:Manifest");
             foreach (XmlNode manifest in manifests)
             {
@@ -278,11 +272,10 @@ namespace Xades_T_Validator.ValidationHandlers
             Description: "overenie referencií v elementoch ds:Manifest: "+
                             "dereferencovanie URI, aplikovanie príslušnej ds: Transforms transformácie(pri base64 decode)," + 
                             "overenie hodnoty ds: DigestValue")]
-        public ValidationError ValidateManifestReference(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidateManifestReference(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             XmlNodeList manifestReferences = xmlDoc.SelectXmlNodes("//ds:Signature/ds:Object/ds:Manifest/ds:Reference");
             foreach (XmlNode manifestRef in manifestReferences)
             {

@@ -8,15 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using Xades_T_Validator.Extensions;
-using Xades_T_Validator.Wrappers;
 
 namespace Xades_T_Validator.XMLHelpers
 {
     public static class XmlNodeHelper
     {
-        public static X509Certificate GetX509Certificate(XMLDocumentWrapper docWrapper)
+        public static X509Certificate GetX509Certificate(XmlDocument xmlDoc)
         {
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
             var encodedCertificate = xmlDoc.SelectXmlNode("//ds:Signature/ds:KeyInfo/ds:X509Data/ds:X509Certificate");
 
             if (encodedCertificate == null)
@@ -29,9 +27,8 @@ namespace Xades_T_Validator.XMLHelpers
             return bouncyCertificate;
         }
 
-        public static TimeStampToken GetTimeStampToken(XMLDocumentWrapper docWrapper)
+        public static TimeStampToken GetTimeStampToken(XmlDocument xmlDoc)
         {
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
             var encapsulatedTimeStampEle = xmlDoc.SelectXmlNode("//xades:EncapsulatedTimeStamp");
 
             if (encapsulatedTimeStampEle == null)
@@ -43,7 +40,5 @@ namespace Xades_T_Validator.XMLHelpers
 
             return token;
         }
-
-
     }
 }

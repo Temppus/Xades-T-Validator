@@ -28,12 +28,11 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 1, Description: "Overenie platnosti podpisového certifikátu časovej pečiatky voči času UtcNow a voči platnému poslednému CRL")]
-        public ValidationError ValidationHandler1(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidationHandler1(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
+            ValidationError validationError = new ValidationError(xmlFileName, null);
 
-            X509Certificate signerCert = GetSignerCertificate(docWrapper);
+            X509Certificate signerCert = GetSignerCertificate(xmlDoc);
 
             if (signerCert == null)
                 return validationError.AppendErrorMessage("Timestamp signer certificate missing.");
@@ -50,12 +49,11 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 2, Description: "Overenie MessageImprint z časovej pečiatky voči podpisu ds:SignatureValue")]
-        public ValidationError ValidationHandler2(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidationHandler2(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
+            ValidationError validationError = new ValidationError(xmlFileName, null);
 
-            TimeStampToken token = XmlNodeHelper.GetTimeStampToken(docWrapper);
+            TimeStampToken token = XmlNodeHelper.GetTimeStampToken(xmlDoc);
 
             byte[] timesStampDigestArray = token.TimeStampInfo.GetMessageImprintDigest();
             string hashAlgorithmId = token.TimeStampInfo.HashAlgorithm.Algorithm.Id;
@@ -86,16 +84,13 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         #region Helpers
-        private X509Certificate GetSignerCertificate(XMLDocumentWrapper docWrapper)
+        private X509Certificate GetSignerCertificate(XmlDocument xmlDoc)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
             X509Certificate signerCertificate = null;
 
             try
             {
-                TimeStampToken token = XmlNodeHelper.GetTimeStampToken(docWrapper);
+                TimeStampToken token = XmlNodeHelper.GetTimeStampToken(xmlDoc);
                 var certificates = token.GetCertificates("Collection").GetMatches(null).Cast<X509Certificate>().ToList();
 
                 foreach (X509Certificate certificate in certificates)

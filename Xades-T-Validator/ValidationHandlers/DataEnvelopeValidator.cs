@@ -17,11 +17,10 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder : 1, Description: "Koreňový element musí obsahovať atribúty xmlns:xzep podľa profilu XADES_ZEP")]
-        public ValidationError ValidationHandler1(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidationHandler1(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             string zepURI = xmlDoc.DocumentElement.AtrValue("xmlns:xzep");
 
             if (zepURI != "http://www.ditec.sk/ep/signature_formats/xades_zep/v1.0")
@@ -31,11 +30,10 @@ namespace Xades_T_Validator.ValidationHandlers
         }
 
         [XadesTValidationHandler(ExecutionOrder: 2, Description: "Koreňový element musí obsahovať atribúty xmlns:ds podľa profilu XADES_ZEP")]
-        public ValidationError ValidationHandler2(XMLDocumentWrapper docWrapper)
+        public ValidationError ValidationHandler2(XmlDocument xmlDoc, string xmlFileName)
         {
-            ValidationError validationError = new ValidationError(docWrapper.XmlName, null);
-            XmlDocument xmlDoc = docWrapper.XmlDoc;
-
+            ValidationError validationError = new ValidationError(xmlFileName, null);
+            
             string dsURI = xmlDoc.DocumentElement.AtrValue("xmlns:ds");
 
             if (dsURI != "http://www.w3.org/2000/09/xmldsig#")
