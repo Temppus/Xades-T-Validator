@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,13 @@ namespace Xades_T_Validator.Extensions
             namespaces.AddNamespace("xzep", "http://www.ditec.sk/ep/signature_formats/xades_zep/v1.0");
 
             return namespaces;
+        }
+
+        public static byte [] ToByteArray(this XmlDocument xmlDoc)
+        {
+            MemoryStream xmlStream = new MemoryStream();
+            xmlDoc.Save(xmlStream);
+            return xmlStream.ToArray();
         }
 
         public static XmlNode SelectXmlNode(this XmlDocument xmlDoc, string xPath)
