@@ -6,10 +6,11 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Xades_T_Validator.Enums;
 
 namespace Xades_T_Validator.Helpers
 {
-    class CrlHelper
+    public static class CrlHelper
     {
         public static X509CrlEntry GetRevokedCertificateEntry(BigInteger serialNumber)
         {
@@ -17,7 +18,7 @@ namespace Xades_T_Validator.Helpers
 
             using (WebClient webClient = new WebClient())
             {
-                crlByteArray = webClient.DownloadData(new Uri("http://test.monex.sk/DTCCACrl/DTCCACrl.crl"));
+                crlByteArray = webClient.DownloadData(new Uri(ValidationEnums.CRL.CRL_URL));
             }
 
             X509CrlParser parser = new X509CrlParser();

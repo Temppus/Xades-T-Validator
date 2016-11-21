@@ -26,6 +26,7 @@ namespace Xades_T_Validator.ValidationHandlers
         public ValidationError ValidationHandler1(XmlDocument xmlDoc, string xmlFileName)
         {
             ValidationError validationError = new ValidationError(xmlFileName, null);
+
             TimeStampToken token = XmlNodeHelper.GetTimeStampToken(xmlDoc);
             Org.BouncyCastle.X509.X509Certificate certificate = XmlNodeHelper.GetX509Certificate(xmlDoc);
 
@@ -40,7 +41,7 @@ namespace Xades_T_Validator.ValidationHandlers
             {
                 certificate.CheckValidity(token.TimeStampInfo.GenTime);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return validationError.AppendErrorMessage("Platnosť podpisového certifikátu neodpovedá času z časovej pečiatky. ErrorMessage ->" + ex.Message);
             }
@@ -53,7 +54,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
             if (entry.RevocationDate < token.TimeStampInfo.GenTime)
                 return validationError.AppendErrorMessage("Platnosť certifikátu vypršala");
-                
+
             return validationError;
         }
     }

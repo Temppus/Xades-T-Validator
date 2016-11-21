@@ -98,7 +98,6 @@ namespace Xades_T_Validator.ValidationHandlers
                     string cerIssuerName = certificate.IssuerDN.ToString(true, new Dictionary<string, string>());
                     string signerIssuerName = token.SignerID.Issuer.ToString(true, new Dictionary<string, string>());
 
-                    // kontrola issuer name a seriového čísla
                     if (cerIssuerName == signerIssuerName && certificate.SerialNumber.Equals(token.SignerID.SerialNumber))
                     {
                         signerCertificate = certificate;

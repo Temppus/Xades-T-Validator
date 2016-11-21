@@ -48,7 +48,7 @@ namespace Xades_T_Validator.Enums
         public class ReferenceTypeConstraints
         {
             /// <summary>
-            /// Type constraints mappings for Reference elements
+            /// Type constraints mappings for Reference elements in ds:SignedInfo element
             /// </summary>
             public static readonly Dictionary<string, string> Mappings = new Dictionary<string, string>
             {
@@ -72,6 +72,14 @@ namespace Xades_T_Validator.Enums
                 { "http://www.w3.org/2001/04/xmldsig-more#rsa-sha384", "SHA384withRSA"},
                 { "http://www.w3.org/2001/04/xmldsig-more#rsa-sha512", "SHA512withRSA"}
             };
+        }
+
+        public class CRL
+        {
+            /// <summary>
+            ///  Certificate revocation list URL
+            /// </summary>
+            public static readonly string CRL_URL = "http://test.monex.sk/DTCCACrl/DTCCACrl.crl";
         }
 
     }

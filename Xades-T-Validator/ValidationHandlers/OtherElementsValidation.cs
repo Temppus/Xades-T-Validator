@@ -23,9 +23,6 @@ namespace Xades_T_Validator.ValidationHandlers
     [XadesTValidator(ExecutionOrder: 4, ValidationTaskName: "Overenie ostatných elementov profilu XAdES_ZEP, ktoré prináležia do špecifikácie XML Signature")]
     partial class OtherElementsValidation : BaseXadesTValidator
     {
-        private const string xmlnsDs = "http://www.w3.org/2000/09/xmldsig#";
-        private const string refType = "http://www.w3.org/2000/09/xmldsig#Object";
-
         public OtherElementsValidation(IEnumerable<XMLDocumentWrapper> documentWrappers) : base(documentWrappers)
         {
         }
@@ -36,14 +33,19 @@ namespace Xades_T_Validator.ValidationHandlers
         public ValidationError ValidateSignature(XmlDocument xmlDoc, string xmlFileName)
         {
             ValidationError validationError = new ValidationError(xmlFileName, null);
-            
-            if (!xmlDoc.SelectXmlNode("//ds:Signature").AtrExists("Id"))
+
+            var signatureNode = xmlDoc.SelectXmlNode("//ds:Signature");
+
+            if (signatureNode == null)
+                return validationError.AppendErrorMessage("Missing signature element.");
+
+            if (!signatureNode.AtrExists("Id"))
             {
-                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                return validationError.AppendErrorMessage("Signature Id attribute missing or empty.");
             }
-            if (xmlDoc.SelectXmlNode("//ds:Signature").AtrValue("xmlns:ds") != xmlnsDs)
+            else if (signatureNode.AtrValue("xmlns:ds") != "http://www.w3.org/2000/09/xmldsig#")
             {
-                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                return validationError.AppendErrorMessage("Signature xmlns:ds missing or not equal to http://www.w3.org/2000/09/xmldsig#");
             }
 
             return validationError;
@@ -56,7 +58,7 @@ namespace Xades_T_Validator.ValidationHandlers
             
             if (!xmlDoc.SelectXmlNode("//ds:Signature/ds:SignatureValue").AtrExists("Id"))
             {
-                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                return validationError.AppendErrorMessage("SignatureValue Id attribute missing or empty.");
             }
 
             return validationError;
@@ -64,7 +66,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
         [XadesTValidationHandler(
             ExecutionOrder: 3, 
-            Description: "overenie existencie referencií v ds:SignedInfo a hodnôt atribútov Id a Type voči profilu XAdES_ZEP pre: " + 
+            Description: "Overenie existencie referencií v ds:SignedInfo a hodnôt atribútov Id a Type voči profilu XAdES_ZEP pre: " + 
                             "ds:KeyInfo element, " + 
                             "ds: SignatureProperties element, " + 
                             "xades: SignedProperties element, " + 
@@ -73,26 +75,25 @@ namespace Xades_T_Validator.ValidationHandlers
         {
             ValidationError validationError = new ValidationError(xmlFileName, null);
             
-            XmlNodeList references = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference");
+            XmlNodeList signedInfoRefs = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference");
 
-            foreach (XmlElement xmlRef in references)
+            foreach (XmlElement signedInfoRef in signedInfoRefs)
             {
-                string refType = xmlRef.AtrValue("Type");
-                string targetId = xmlRef.AtrValue("URI")?.Substring(1);
-                var targetElement = xmlDoc.SelectXmlNode("//ds:Signature//*[@Id='" + targetId + "']");
+                string refType = signedInfoRef.AtrValue("Type");
+                string refURI = signedInfoRef.AtrValue("URI")?.Substring(1);
+                XmlNode referencedEle = xmlDoc.SelectXmlNode($"//ds:Signature//*[@Id='{refURI}']");
 
-                if (refType == null || targetId == null || targetElement == null)
+                if (referencedEle == null)
                 {
-                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
-                    return validationError;
+                    return validationError.AppendErrorMessage($"Referenced with Id {refURI} does not exists.");
                 }
 
-                if (!ValidationEnums.ReferenceTypeConstraints.Mappings.Contains(new KeyValuePair<string, string>(targetElement.Name, refType)))
+                if (!ValidationEnums.ReferenceTypeConstraints.Mappings.Contains(new KeyValuePair<string, string>(referencedEle.Name, refType)))
                 {
-                    validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+                    return validationError.AppendErrorMessage("Referenced not exists or type is not supported.");
                 }
             }
-
+            // TODO: Check logic by 4.3.1.3. And use more meaningful error messages
             if (xmlDoc.SelectXmlNode("//ds:Signature/ds:SignedInfo/ds:Reference[@Type='http://www.w3.org/2000/09/xmldsig#Object']") == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -111,20 +112,23 @@ namespace Xades_T_Validator.ValidationHandlers
 
         [XadesTValidationHandler(
             ExecutionOrder: 5, 
-            Description: "overenie obsahu ds:SignatureProperties:" + 
+            Description: "Overenie obsahu ds:SignatureProperties:" + 
                             "musí mať Id atribút," + 
                             "musí obsahovať dva elementy ds: SignatureProperty pre xzep: SignatureVersion a xzep: ProductInfos," + 
                             "obidva ds: SignatureProperty musia mať atribút Target nastavený na ds: Signature, -oba kontrola cez mriežku  #signatureid")]
         public ValidationError ValidateSignatureProperties(XmlDocument xmlDoc, string xmlFileName)
         {
             ValidationError validationError = new ValidationError(xmlFileName, null);
-            
+
+            // TODO: Use more meaningful error messages
             if (!xmlDoc.SelectXmlNode("//ds:Signature/ds:Object/ds:SignatureProperties").AtrExists("Id"))
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
+
             XmlNode signatureVersion = xmlDoc.SelectXmlNode("//ds:Signature/ds:Object/ds:SignatureProperties/ds:SignatureProperty/xzep:SignatureVersion");
             XmlNode productInfos = xmlDoc.SelectXmlNode("//ds:Signature/ds:Object/ds:SignatureProperties/ds:SignatureProperty/xzep:ProductInfos");
+
             if (signatureVersion == null || productInfos == null)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
@@ -132,7 +136,7 @@ namespace Xades_T_Validator.ValidationHandlers
             }
 
             string signatureId = xmlDoc.SelectXmlNode("//ds:Signature")?.AtrValue("Id");
-            if (signatureVersion.ParentNode.AtrValue("Target").Substring(1) != signatureId || productInfos.ParentNode.AtrValue("Target").Substring(1) != signatureId)
+            if (signatureVersion.ParentNode.AtrValue("Target")?.Substring(1) != signatureId || productInfos.ParentNode.AtrValue("Target")?.Substring(1) != signatureId)
             {
                 validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
@@ -146,39 +150,36 @@ namespace Xades_T_Validator.ValidationHandlers
         public ValidationError ValidationHandler1(XmlDocument xmlDoc, string xmlFileName)
         {
             ValidationError validationError = new ValidationError(xmlFileName, null);
-            
-            var keyInfoID = xmlDoc.SelectXmlNode("//ds:Signature/ds:KeyInfo")?.AtrValue("Id");
 
-            if(keyInfoID == null)
-                validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
+            var keyInfoEle = xmlDoc.SelectXmlNode("//ds:Signature/ds:KeyInfo");
 
-            //check x509
+            if (keyInfoEle == null || !keyInfoEle.AtrExists("Id"))
+                return validationError.AppendErrorMessage("KeyInfo does not exists or missing Id attribute.");
+
+            // check x509
             var x509Data = xmlDoc.SelectXmlNode("//ds:Signature/ds:KeyInfo/ds:X509Data");
 
             if (x509Data == null)
             {
-                validationError.AppendErrorMessage("KeyInfo musí obsahovať element x509Data");
-                return validationError;
+                return validationError.AppendErrorMessage("KeyInfo musí obsahovať element x509Data");
             }
 
-            //check certificate element
             if (x509Data.SelectXmlNode("ds:X509Certificate") == null)
             {
-                validationError.AppendErrorMessage("x509Data musí obsahovať element x509Certificate");
-                return validationError;
+                return validationError.AppendErrorMessage("x509Data musí obsahovať element x509Certificate");
             }
 
             X509Certificate certificate =  XmlNodeHelper.GetX509Certificate(xmlDoc);
 
             //check SubjectName
             if (x509Data.SelectXmlNode("ds:X509SubjectName") == null)
-                validationError.AppendErrorMessage("x509Data musí obsahovať element SubjectName");
+                return validationError.AppendErrorMessage("x509Data musí obsahovať element SubjectName");
             else 
             {
                 var X509SubjectName = x509Data.SelectXmlNode("ds:X509SubjectName");
 
                 if (X509SubjectName.InnerText != certificate.CertificateStructure.Subject.ToString())
-                    validationError.AppendErrorMessage("X509SubjectName sa nezhoduje");
+                    return validationError.AppendErrorMessage("X509SubjectName sa nezhoduje");
             }
 
             //check IssuerSerial
@@ -191,16 +192,16 @@ namespace Xades_T_Validator.ValidationHandlers
                 X509Name xmlName = new X509Name(X509IssuerSerial.InnerText.Replace("S=", "ST="));
 
                 if (!xmlName.Equivalent(certificate.CertificateStructure.Issuer))
-                    validationError.AppendErrorMessage("IssuerSerial sa nezhoduje");
+                    return validationError.AppendErrorMessage("IssuerSerial sa nezhoduje");
             }
 
             //check SerialNumber
             var X509SerialNumber = x509Data.SelectXmlNode("ds:X509IssuerSerial/ds:X509SerialNumber");
 
             if(X509SerialNumber == null)
-                validationError.AppendErrorMessage("x509Data musí obsahovať element SerialNumber");
+                return validationError.AppendErrorMessage("x509Data musí obsahovať element SerialNumber");
             else if (X509SerialNumber.InnerText != certificate.SerialNumber.ToString())
-                validationError.AppendErrorMessage("X509SerialNumber sa nezhoduje");
+                return validationError.AppendErrorMessage("X509SerialNumber sa nezhoduje");
 
             return validationError;
         }
@@ -223,46 +224,45 @@ namespace Xades_T_Validator.ValidationHandlers
             XmlNodeList manifests = xmlDoc.SelectXmlNodes("//ds:Signature/ds:Object/ds:Manifest");
             foreach (XmlNode manifest in manifests)
             {
-                //Manifest/references - count validation (must have one)
+                // Manifest/references - count validation (must have one)
                 XmlNodeList manifestReferences = manifest.SelectXmlNodes("ds:Reference");
                 if (manifestReferences.Count != 1)
                 {
-                    validationError.AppendErrorMessage("overenie ds:Manifest elementov: každý ds:Manifest element musí obsahovať práve jednu referenciu na ds: Object");
+                    return validationError.AppendErrorMessage("Overenie ds:Manifest elementov: každý ds:Manifest element musí obsahovať práve jednu referenciu na ds: Object");
                 }
 
-                //Id validation
+                // Id validation
                 if (!manifest.AtrExists("Id"))
                 {
-                    validationError.AppendErrorMessage("overenie ds:Manifest elementov: každý ds:Manifest element musí mať Id atribút");
+                    return validationError.AppendErrorMessage("Overenie ds:Manifest elementov: každý ds:Manifest element musí mať Id atribút");
                 }
 
-                //Manifest/reference/transforms/transform - Algorithm validation
+                // Manifest/reference/transforms/transform - Algorithm validation
                 XmlNodeList manifestTransforms = manifest.SelectXmlNodes("ds:Reference/ds:Transforms/ds:Transform");
                 foreach (XmlNode transform in manifestTransforms)
                 {
                     if (!ValidationEnums.ManifestTransformation.SupportedTransformations.Contains(transform.AtrValue("Algorithm")))
                     {
-                        validationError.AppendErrorMessage("overenie ds:Manifest elementov: ds:Transforms musí byť z množiny podporovaných algoritmov pre daný element podľa profilu XAdES_ZEP,");
+                        return validationError.AppendErrorMessage("Overenie ds:Manifest elementov: ds:Transforms musí byť z množiny podporovaných algoritmov pre daný element podľa profilu XAdES_ZEP,");
                     }
                 }
 
-                //Manifest/reference/digestMethod - Algoritm validation
+                // Manifest/reference/digestMethod - Algoritm validation
                 XmlNodeList manifestDigestMethods = manifest.SelectXmlNodes("ds:Reference/ds:DigestMethod");
                 foreach (XmlNode digestMethod in manifestDigestMethods)
                 {
                     if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestMethod.AtrValue("Algorithm")))
                     {
-                        validationError.AppendErrorMessage("overenie ds:Manifest elementov: ds:DigestMethod – musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP");
+                        return validationError.AppendErrorMessage("Overenie ds:Manifest elementov: ds:DigestMethod – musí obsahovať URI niektorého z podporovaných algoritmov podľa profilu XAdES_ZEP");
                     }
                 }
 
-                //Manifest/reference - Type validation
+                // Manifest/reference - Type validation
                 XmlNode manifestReference = manifest.SelectXmlNode("ds:Reference");
-                if(manifestReference.AtrValue("Type") != refType)
+                if(manifestReference.AtrValue("Type") != "http://www.w3.org/2000/09/xmldsig#Object")
                 {
-                    validationError.AppendErrorMessage("overenie ds:Manifest elementov: overenie hodnoty Type atribútu voči profilu XAdES_ZEP");
+                    return validationError.AppendErrorMessage("Overenie ds:Manifest elementov: overenie hodnoty Type atribútu voči profilu XAdES_ZEP");
                 }
-
             }
             return validationError;
         }
@@ -285,7 +285,7 @@ namespace Xades_T_Validator.ValidationHandlers
                 if (referencedObject == null)
                     return validationError.AppendErrorMessage("Referenced object does not exist");
 
-                byte[] referencedElementByte = CanonicalizationHelper.CanonicalizeXml(referencedObject);
+                byte [] referencedElementByte = CanonicalizationHelper.CanonicalizeXml(referencedObject);
 
                 XmlNodeList transforms = manifestRef.SelectXmlNodes("ds:Transforms/ds:Transform");
                 string digestAlgo = manifestRef.SelectXmlNode("ds:DigestMethod")?.AtrValue("Algorithm");
@@ -314,8 +314,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
                     if (digestValue != digestOutputBase64String)
                     {
-                        validationError.AppendErrorMessage($"Digest values do not match. {digestValue}  <-> {digestOutputBase64String}");
-                        return validationError;
+                        return validationError.AppendErrorMessage($"ds:DigestValue values do not match {digestValue}  <-> {digestOutputBase64String}");
                     }
                 }
             }

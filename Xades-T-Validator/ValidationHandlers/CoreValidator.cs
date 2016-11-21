@@ -27,7 +27,12 @@ namespace Xades_T_Validator.ValidationHandlers
         {
             ValidationError validationError = new ValidationError(xmlFileName, null);
 
-            var referencesNodes = xmlDoc.SelectXmlNodes($"//ds:Signature/ds:SignedInfo/ds:Reference[@Type='{ValidationEnums.ReferenceTypeConstraints.Mappings["ds:Manifest"]}']");
+            if (!ValidationEnums.ReferenceTypeConstraints.Mappings.ContainsKey("ds:Manifest"))
+                return validationError.AppendErrorMessage("Signature reference type was not found.");
+
+            var referenceType = ValidationEnums.ReferenceTypeConstraints.Mappings["ds:Manifest"];
+
+            var referencesNodes = xmlDoc.SelectXmlNodes($"//ds:Signature/ds:SignedInfo/ds:Reference[@Type='{referenceType}']");
 
             foreach (XmlNode refNode in referencesNodes)
             {
@@ -36,13 +41,13 @@ namespace Xades_T_Validator.ValidationHandlers
                 var manifestNode = xmlDoc.SelectXmlNode($"//ds:Manifest[@Id='{uriTarget}']");
 
                 if (manifestNode == null)
-                    validationError.AppendErrorMessage($"Couldnt find Manifest element with id : {uriTarget}.");
+                    return validationError.AppendErrorMessage($"Couldnt find Manifest element with id : {uriTarget}.");
 
                 // Reference digest method
                 string digestAlgorithm = refNode.SelectXmlNode("//ds:DigestMethod")?.AtrValue("Algorithm");
 
                 if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestAlgorithm))
-                    validationError.AppendErrorMessage($"Invalid digest method algorithm : {digestAlgorithm}");
+                    return validationError.AppendErrorMessage($"Invalid digest method algorithm : {digestAlgorithm}");
 
                 var transformNodes = refNode.SelectXmlNodes("ds:Transforms/ds:Transform");
 
@@ -53,8 +58,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
                     if (transformAlgorithm != ValidationEnums.Canonicalization.CanonicalizationMethod)
                     {
-                        validationError.AppendErrorMessage($"Invalid transform algorithm : {transformAlgorithm}");
-                        break;
+                        return validationError.AppendErrorMessage($"Invalid transform algorithm : {transformAlgorithm}");
                     }
 
                     var outputArray = CanonicalizationHelper.CanonicalizeXmlDigest(manifestNode, ValidationEnums.HashAlgorithms.SHAMappings[digestAlgorithm]);
@@ -65,7 +69,7 @@ namespace Xades_T_Validator.ValidationHandlers
 
                     if (digestOutputBase64String != xmlDigestValueBase64String)
                     {
-                        validationError.AppendErrorMessage("Digest values do not match.");
+                        return validationError.AppendErrorMessage("Digest values do not match.");
                     }
                 }
             }

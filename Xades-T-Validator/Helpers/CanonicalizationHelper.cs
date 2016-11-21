@@ -22,7 +22,7 @@ namespace Xades_T_Validator.Helpers
             c14n.LoadInput(manifestDoc);
 
             return ((MemoryStream)c14n.GetOutput()).ToArray();
-        }   
+        }
 
         public static byte[] CanonicalizeXmlDigest(XmlNode xmlNode, System.Security.Cryptography.HashAlgorithm hashAlgo)
         {

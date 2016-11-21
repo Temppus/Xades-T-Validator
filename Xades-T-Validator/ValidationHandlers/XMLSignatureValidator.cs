@@ -51,11 +51,11 @@ namespace Xades_T_Validator.ValidationHandlers
         {
             ValidationError validationError = new ValidationError(xmlFileName, null);
             
-            var transforms = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:Transforms/ds:Transform");
+            var transformNodes = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:Transforms/ds:Transform");
 
-            for (int i = 0; i < transforms.Count; i++)
+            foreach (XmlNode transform in transformNodes)
             {
-                if (transforms[i].AtrValue("Algorithm") != ValidationEnums.Canonicalization.CanonicalizationMethod)
+                if (transform.AtrValue("Algorithm") != ValidationEnums.Canonicalization.CanonicalizationMethod)
                 {
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
                     break;
@@ -72,9 +72,9 @@ namespace Xades_T_Validator.ValidationHandlers
             
             var digestMethods = xmlDoc.SelectXmlNodes("//ds:Signature/ds:SignedInfo/ds:Reference/ds:DigestMethod");
 
-            for (int i = 0; i < digestMethods.Count; i++)
+            foreach (XmlNode digestMethod in digestMethods)
             {
-                if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestMethods[i].AtrValue("Algorithm")))
+                if (!ValidationEnums.HashAlgorithms.SHAMappings.ContainsKey(digestMethod.AtrValue("Algorithm")))
                     validationError.ErrorMessage = GetErrorMessage(MethodBase.GetCurrentMethod());
             }
 

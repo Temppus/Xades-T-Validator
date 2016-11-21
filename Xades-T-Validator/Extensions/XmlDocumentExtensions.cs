@@ -32,7 +32,6 @@ namespace Xades_T_Validator.Extensions
             return xmlNode.SelectSingleNode(xPath, xmlNode.OwnerDocument.NameSpaceManager());
         }
 
-
         public static XmlNodeList SelectXmlNodes(this XmlDocument xmlDoc, string xPath)
         {
             return xmlDoc.DocumentElement.SelectNodes(xPath, xmlDoc.NameSpaceManager());
@@ -50,7 +49,7 @@ namespace Xades_T_Validator.Extensions
 
         public static bool AtrExists(this XmlNode xmlNode, string atrName)
         {
-            return xmlNode.Attributes[atrName] != null;
+            return xmlNode.Attributes[atrName] != null && xmlNode.AtrValue(atrName) != string.Empty;
         }
     }
 }
