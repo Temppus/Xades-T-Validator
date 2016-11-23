@@ -15,11 +15,13 @@ namespace Xades_T_Validator
 {
     public class ValidationExecutor
     {
-        private static string XML_DIR_PATH = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Documents");
+        private static string XML_DIR_PATH = Directory.GetParent(Directory.GetParent(Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).FullName).FullName).FullName;
         private static string VALIDATION_ERRORS_FILE_PATH = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "validationErrors.txt");
 
         static void Main(string[] args)
         {
+            XML_DIR_PATH = Path.Combine(XML_DIR_PATH, "Documents");
+
             var xmlDocs = XmlLoaderHelper.LoadXMLDocuments(XML_DIR_PATH);
 
             if (File.Exists(VALIDATION_ERRORS_FILE_PATH))
