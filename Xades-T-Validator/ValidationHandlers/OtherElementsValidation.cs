@@ -303,11 +303,9 @@ namespace Xades_T_Validator.ValidationHandlers
                     if (transformAlgo == ValidationEnums.Canonicalization.CanonicalizationMethod)
                     {
                         var hashAlgo = ValidationEnums.HashAlgorithms.SHAMappings[digestAlgo];
-                        var outputArray = CanonicalizationHelper.CanonicalizeXml(referencedObject);
+                        var outputArray = CanonicalizationHelper.CanonicalizeXmlDigest(referencedObject, hashAlgo);
 
-                        SHA256 s = new SHA256Managed();
-
-                        digestOutputBase64String = Convert.ToBase64String(s.ComputeHash(outputArray));
+                        digestOutputBase64String = Convert.ToBase64String(outputArray);
                     }
                     else if (transformAlgo == "http://www.w3.org/2000/09/xmldsig#base64")
                     {
