@@ -67,7 +67,6 @@ namespace Xades_T_Validator.ValidationHandlers
 
             var signatureMethodAlgorithm = xmlDoc.SelectXmlNode("//ds:SignedInfo/ds:SignatureMethod").AtrValue("Algorithm");
 
-            // TODO: Is this legit ?
             if (signatureMethodAlgorithm != "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
                 return validationError.AppendErrorMessage($"Unknown SignatureMethod Algorithm {signatureMethodAlgorithm}.");
 
